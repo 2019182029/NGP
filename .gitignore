@@ -33,7 +33,6 @@
 
 # 
 *.vsidx
-*.vcxproj
 *.filters
 *.user
 *.recipe
