@@ -128,12 +128,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ClientServerThread.cpp" />
-    <ClCompile Include="InfoCheckThread.cpp" />
+    <ClCompile Include="InfoCheckThread.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="InGameThread.cpp" />
     <ClCompile Include="Server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClientServerThread.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="InfoCheckThread.h" />
     <ClInclude Include="InGameThread.h" />
   </ItemGroup>
