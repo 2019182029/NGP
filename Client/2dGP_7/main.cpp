@@ -28,6 +28,24 @@ GLuint teapotNomalVbo;
 std::default_random_engine engine2(std::random_device{}());
 std::uniform_real_distribution<double> random_model(1, 6);
 
+obs wall;
+obss main_character(cubePosVbo2, cubeNomalVbo2);
+
+std::vector<object_won> objects;
+
+objRead RockReader;
+GLint RockObject = RockReader.loadObj_normalize_center("rock.obj");
+
+objRead CubeReader;
+GLint CubeObject = CubeReader.loadObj_normalize_center("cube.obj");
+
+objRead sphere;
+GLint sphereObject = sphere.loadObj_normalize_center("sphere.obj");
+
+objRead teapotReader;
+GLint teapotObject = teapotReader.loadObj_normalize_center("teapot.obj");
+
+GLfloat Color[4]{ 0.0f, 0.0f, 0.0f, 1.0f };
 void setOrthographicProjection() {
     // 현재 행렬 모드 저장
     glMatrixMode(GL_MODELVIEW);
@@ -68,25 +86,6 @@ void renderBitmapString(float x, float y, void* font, const char* string) {
 
 
 
-obs wall;
-obss main_character(cubePosVbo2,cubeNomalVbo2);
-
-std::vector<object_won> objects;
-
-objRead RockReader;
-GLint RockObject = RockReader.loadObj_normalize_center("rock.obj");
-
-objRead CubeReader;
-GLint CubeObject = CubeReader.loadObj_normalize_center("cube.obj");
-
-objRead sphere;
-GLint sphereObject = sphere.loadObj_normalize_center("sphere.obj");
-
-objRead teapotReader;
-GLint teapotObject = teapotReader.loadObj_normalize_center("teapot.obj");
-
-GLfloat Color[4]{ 0.0f, 0.0f, 0.0f, 1.0f };
-
 bool checkCollision(object_won& , obss& );
 
 
@@ -100,6 +99,7 @@ int playerHP = 100;
 
 light_set light;
 #define GAME_BGM "gamebgm.wav"
+
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
