@@ -132,6 +132,7 @@
     <ClCompile Include="class.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="obj.cpp" />
+    <ClCompile Include="packet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl" />
@@ -141,6 +142,7 @@
     <ClInclude Include="class.h" />
     <ClInclude Include="obj.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="packet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

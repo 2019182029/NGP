@@ -46,6 +46,7 @@ objRead teapotReader;
 GLint teapotObject = teapotReader.loadObj_normalize_center("teapot.obj");
 
 GLfloat Color[4]{ 0.0f, 0.0f, 0.0f, 1.0f };
+
 void setOrthographicProjection() {
     // 현재 행렬 모드 저장
     glMatrixMode(GL_MODELVIEW);

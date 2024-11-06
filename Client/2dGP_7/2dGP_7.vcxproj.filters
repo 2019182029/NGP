@@ -24,6 +24,9 @@
     <ClCompile Include="class.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="packet.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl">
@@ -41,6 +44,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="class.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="packet.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
