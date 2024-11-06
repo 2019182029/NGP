@@ -3,11 +3,6 @@
 
 #define SERVERPORT 9000
 
-// 오류 출력 함수
-void err_quit(const char* msg);
-void err_display(const char* msg);
-void err_display(int errcode);
-
 // 서버 전역 변수
 std::array<Packet, 4> ClientInfoArray;
 std::queue<Packet> ClientServerQueue;
@@ -53,8 +48,7 @@ int main(int argc, char* argv[]) {
 
 	// 정보 확인 스레드 생성
 	HANDLE hInfoCheckThread;
-	InfoCheckThreadArg InfoCheckThreadArg;
-	InfoCheckThreadArg.SetArg(&ClientInfoArray, &ClientServerQueue, &ServerClientArray, &WriteEvent, &CS_CSQ, &CS_SCA);
+	ThreadArg InfoCheckThreadArg(&ClientInfoArray, &ClientServerQueue, &ServerClientArray, &WriteEvent, &CS_CSQ, &CS_SCA);
 	hInfoCheckThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&InfoCheckThreadArg, 0, NULL);
 	if (hInfoCheckThread != NULL) CloseHandle(hInfoCheckThread);
 
@@ -82,41 +76,4 @@ int main(int argc, char* argv[]) {
 	CloseHandle(WriteEvent);
 	
 	return 0;
-}
-
-// 소켓 함수 오류 출력 후 종료
-void err_quit(const char* msg) {
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf, 0, NULL);
-	MessageBoxA(NULL, (const char*)lpMsgBuf, msg, MB_ICONERROR);
-	LocalFree(lpMsgBuf);
-	exit(1);
-}
-
-// 소켓 함수 오류 출력
-void err_display(const char* msg) {
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf, 0, NULL);
-	printf("[%s] %s\n", msg, (char*)lpMsgBuf);
-	LocalFree(lpMsgBuf);
-}
-
-// 소켓 함수 오류 출력
-void err_display(int errcode) {
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, errcode,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf, 0, NULL);
-	printf("[오류] %s\n", (char*)lpMsgBuf);
-	LocalFree(lpMsgBuf);
 }
