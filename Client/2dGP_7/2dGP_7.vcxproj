@@ -140,6 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="class.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="obj.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="packet.h" />

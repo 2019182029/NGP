@@ -1,10 +1,22 @@
 #include "main.h"
 #include "obj.h"
 #include "class.h"
+#include "packet.h"
+#include "Common.h"
 #pragma comment(lib, "winmm")
 #include <mmsystem.h>
 
+#pragma comment(lib, "Comctl32.lib") // 공용 컨트롤 라이브러리 링크
+
+#define SERVERPORT 9000
+#define BUFSIZE    512
+
+SOCKET sock; // 소켓
+char buf[BUFSIZE + 1]; // 데이터 송수신 버퍼
+
 GLuint vao;
+
+Packet packetclient;
 
 GLchar* vertexSource, * fragmentSource;
 GLuint vertexShader, fragmentShader;
@@ -47,6 +59,8 @@ GLint teapotObject = teapotReader.loadObj_normalize_center("teapot.obj");
 
 GLfloat Color[4]{ 0.0f, 0.0f, 0.0f, 1.0f };
 
+light_set light;
+
 void setOrthographicProjection() {
     // 현재 행렬 모드 저장
     glMatrixMode(GL_MODELVIEW);
@@ -76,7 +90,6 @@ void resetPerspectiveProjection() {
     glPopMatrix();
 }
 
-
 void renderBitmapString(float x, float y, void* font, const char* string) {
     const char* c;
     glRasterPos2f(x, y);
@@ -85,21 +98,15 @@ void renderBitmapString(float x, float y, void* font, const char* string) {
     }
 }
 
-
-
 bool checkCollision(object_won& , obss& );
-
 
 int move_check{};
 int jump_check = 3;
 int sever_level = 0;
 bool game_check = true;
 bool left_button = false;
-
 int playerHP = 100;
 
-light_set light;
-#define GAME_BGM "gamebgm.wav"
 
 int main(int argc, char** argv)
 {
