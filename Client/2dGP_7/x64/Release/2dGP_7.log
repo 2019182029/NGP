@@ -1,15 +1,10 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: 중간 디렉터리(x64\Release\)에 다른 프로젝트(2dGP_7-MyAsusLaptop.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
-  class.cpp
-C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\class.cpp(53,38): warning C4244: '=': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   main.cpp
-C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\main.cpp(337,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\main.cpp(338,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\main.cpp(765,23): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  obj.cpp
-C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\obj.cpp(110,26): warning C4267: 'return': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  packet.cpp
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\main.cpp(494,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\main.cpp(495,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\main.cpp(922,23): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   코드를 생성하고 있습니다.
-  0 of 431 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+  1 of 439 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.

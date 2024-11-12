@@ -144,6 +144,10 @@
     <ClInclude Include="obj.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="packet.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GUITCPClient.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

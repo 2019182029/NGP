@@ -3,16 +3,31 @@
 #include "class.h"
 #include "packet.h"
 #include "Common.h"
+#include "resource.h"
 #pragma comment(lib, "winmm")
 #include <mmsystem.h>
+
+#include <Commctrl.h> // 공용 컨트롤 헤더 추가
 
 #pragma comment(lib, "Comctl32.lib") // 공용 컨트롤 라이브러리 링크
 
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
+// 대화상자 프로시저
+INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
+// 에디트 컨트롤 출력 함수
+void DisplayText(const char* fmt, ...);
+// 소켓 함수 오류 출력
+void DisplayError(const char* msg);
+// GUI 처리 및 소켓 통신을 위한 스레드 함수
+DWORD WINAPI GuiAndClientMain(LPVOID arg);
+
 SOCKET sock; // 소켓
 char buf[BUFSIZE + 1]; // 데이터 송수신 버퍼
+HWND hReadyButton, hCancelButton, hExitButton, hEditIP; // 버튼 및 IP 입력 필드 핸들
+HINSTANCE g_inst; // 인스턴스 핸들
+
 
 GLuint vao;
 
@@ -108,8 +123,150 @@ bool left_button = false;
 int playerHP = 100;
 
 
+// GUI 및 소켓 통신을 처리하는 스레드 함수
+DWORD WINAPI GuiAndClientMain(LPVOID arg)
+{
+    DialogBox(g_inst, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DlgProc);
+    return 0;
+}
+
+// 대화상자 프로시저
+INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg) {
+    case WM_INITDIALOG:
+        // IP 입력 필드 초기화
+        hEditIP = GetDlgItem(hDlg, IDC_IP);
+
+        // 버튼 초기화
+        hReadyButton = GetDlgItem(hDlg, ID_READY);
+        hCancelButton = GetDlgItem(hDlg, ID_CANCEL);
+        hExitButton = GetDlgItem(hDlg, ID_EXIT);
+        EnableWindow(hCancelButton, FALSE); // "준비 취소" 버튼은 비활성화
+
+        // 소켓 초기화 및 연결 설정
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock == INVALID_SOCKET) {
+            DisplayError("socket()");
+            EndDialog(hDlg, IDCANCEL);
+            return FALSE;
+        }
+        return TRUE;
+
+    case WM_COMMAND:
+        switch (LOWORD(wParam)) {
+        case ID_READY:
+            EnableWindow(hReadyButton, FALSE); // "준비 완료" 버튼 비활성화
+            EnableWindow(hCancelButton, TRUE); // "준비 취소" 버튼 활성화
+
+            // IP 주소 가져오기
+            DWORD ip;
+            SendMessage(hEditIP, IPM_GETADDRESS, 0, (LPARAM)&ip);
+
+            // IP 주소를 각 부분으로 나누기
+            {
+                BYTE part1 = FIRST_IPADDRESS(ip);
+                BYTE part2 = SECOND_IPADDRESS(ip);
+                BYTE part3 = THIRD_IPADDRESS(ip);
+                BYTE part4 = FOURTH_IPADDRESS(ip);
+
+                // IP 주소를 문자열로 변환하여 저장
+                snprintf(buf, BUFSIZE, "%d.%d.%d.%d", part1, part2, part3, part4);
+            }
+
+            // 서버 연결 시도
+            struct sockaddr_in serverAddr;
+            serverAddr.sin_family = AF_INET;
+            serverAddr.sin_port = htons(SERVERPORT);
+            serverAddr.sin_addr.s_addr = inet_addr(buf);
+
+            if (connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+                DisplayError("connect()");
+                closesocket(sock);
+                sock = INVALID_SOCKET;
+                EnableWindow(hReadyButton, TRUE);
+                EnableWindow(hCancelButton, FALSE);
+                return TRUE;
+            }
+
+            DisplayText("준비 완료되었습니다. 서버에 연결되었습니다. IP 주소: %s\n", buf);
+            return TRUE;
+
+        case ID_CANCEL:
+            EnableWindow(hReadyButton, TRUE); // "준비 완료" 버튼 활성화
+            EnableWindow(hCancelButton, FALSE); // "준비 취소" 버튼 비활성화
+            DisplayText("준비 취소되었습니다.\n");
+            SendMessage(hEditIP, IPM_CLEARADDRESS, 0, 0); // 입력 필드 초기화
+            return TRUE;
+
+        case ID_EXIT:
+            EndDialog(hDlg, IDCANCEL); // 대화 상자 닫기
+            if (sock != INVALID_SOCKET) {
+                closesocket(sock); // 소켓 닫기
+                sock = INVALID_SOCKET;
+            }
+            return TRUE;
+        }
+        return FALSE;
+    }
+    return FALSE;
+}
+
+// 에디트 컨트롤 출력 함수
+void DisplayText(const char* fmt, ...)
+{
+    va_list arg;
+    va_start(arg, fmt);
+    char cbuf[BUFSIZE * 2];
+    vsprintf(cbuf, fmt, arg);
+    va_end(arg);
+
+    int nLength = GetWindowTextLength(GetDlgItem(GetParent(hReadyButton), IDC_EDIT2));
+    SendMessage(GetDlgItem(GetParent(hReadyButton), IDC_EDIT2), EM_SETSEL, nLength, nLength);
+    SendMessageA(GetDlgItem(GetParent(hReadyButton), IDC_EDIT2), EM_REPLACESEL, FALSE, (LPARAM)cbuf);
+}
+
+// 소켓 함수 오류 출력
+void DisplayError(const char* msg)
+{
+    LPVOID lpMsgBuf;
+    FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL, WSAGetLastError(),
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (char*)&lpMsgBuf, 0, NULL);
+    DisplayText("[%s] %s\r\n", msg, (char*)lpMsgBuf);
+    LocalFree(lpMsgBuf);
+}
+
+
 int main(int argc, char** argv)
 {
+    g_inst = GetModuleHandle(NULL); // 인스턴스 핸들을 main에서 직접 가져옴
+
+    // 공용 컨트롤 초기화
+    INITCOMMONCONTROLSEX icex;
+    icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+    icex.dwICC = ICC_INTERNET_CLASSES;
+    InitCommonControlsEx(&icex);
+
+    // 윈속 초기화
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        return 1;
+
+    // GUI 및 소켓 통신 스레드 생성
+    HANDLE hThread = CreateThread(NULL, 0, GuiAndClientMain, NULL, 0, NULL);
+    if (hThread == NULL) {
+        DisplayError("Failed to create hThread");
+        WSACleanup();
+        return 1;
+    }
+
+    WaitForSingleObject(hThread, INFINITE);
+
+    CloseHandle(hThread);
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowPosition(100, 100);
