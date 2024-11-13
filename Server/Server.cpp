@@ -13,6 +13,9 @@ HANDLE ClientInfoArray_Event;
 CRITICAL_SECTION ClientServerQueue_CS;
 CRITICAL_SECTION ServerClientArray_CS;
 
+// 게임 시작 여부
+bool isGameStart = false;
+
 int main(int argc, char* argv[]) {
 	// 데이터 통신에 사용할 변수
 	int retval;
@@ -46,19 +49,20 @@ int main(int argc, char* argv[]) {
 	retval = listen(listen_sock, SOMAXCONN);
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
-	// 스레드 인자 
-	ThreadArg tArg;
-	tArg.SetSocket(NULL);
-	tArg.SetClientInfoArray(&ClientInfoArray);
-	tArg.SetClientServerQueue(&ClientServerQueue);
-	tArg.SetServerClientArray(&ServerClientArray);
-	tArg.SetClientInfoArrayEvent(&ClientInfoArray_Event);
-	tArg.SetClientServerQueueCS(&ClientServerQueue_CS);
-	tArg.SetServerClientArrayCS(&ServerClientArray_CS);
+	// 정보 확인 스레드 인자 
+	ThreadArg InfoCheckThreadArg;
+	InfoCheckThreadArg.SetSocket(NULL);
+	InfoCheckThreadArg.SetClientInfoArray(&ClientInfoArray);
+	InfoCheckThreadArg.SetClientServerQueue(&ClientServerQueue);
+	InfoCheckThreadArg.SetServerClientArray(&ServerClientArray);
+	InfoCheckThreadArg.SetClientInfoArrayEvent(&ClientInfoArray_Event);
+	InfoCheckThreadArg.SetClientServerQueueCS(&ClientServerQueue_CS);
+	InfoCheckThreadArg.SetServerClientArrayCS(&ServerClientArray_CS);
+	InfoCheckThreadArg.SetGameStartOrNot(&isGameStart);
 
 	// 정보 확인 스레드 생성
 	HANDLE hThread;
-	hThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&tArg, 0, NULL);
+	hThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&InfoCheckThreadArg, 0, NULL);
 	if (hThread != NULL) CloseHandle(hThread);
 
 	while (1) {
@@ -70,10 +74,23 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 
+		// 클라이언트 전용 스레드 인자 
+		ThreadArg* ClientServerThreadArg = new ThreadArg();
+		ClientServerThreadArg->SetSocket(client_sock);
+		ClientServerThreadArg->SetClientInfoArray(&ClientInfoArray);
+		ClientServerThreadArg->SetClientServerQueue(&ClientServerQueue);
+		ClientServerThreadArg->SetServerClientArray(&ServerClientArray);
+		ClientServerThreadArg->SetClientInfoArrayEvent(&ClientInfoArray_Event);
+		ClientServerThreadArg->SetClientServerQueueCS(&ClientServerQueue_CS);
+		ClientServerThreadArg->SetServerClientArrayCS(&ServerClientArray_CS);
+		ClientServerThreadArg->SetGameStartOrNot(&isGameStart);
+
 		// 클라이언트 전용 스레드 생성
-		tArg.SetSocket(client_sock);
-		hThread = CreateThread(NULL, 0, ClientServerThread, (LPVOID)&tArg, 0, NULL);
-		if (hThread == NULL) { closesocket(client_sock); }
+		hThread = CreateThread(NULL, 0, ClientServerThread, (LPVOID)ClientServerThreadArg, 0, NULL);
+		if (hThread == NULL) { 
+			delete ClientServerThreadArg;
+			closesocket(client_sock); 
+		}
 		else { CloseHandle(hThread); }
 	}
 
