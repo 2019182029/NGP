@@ -9,9 +9,9 @@ std::queue<Packet> ClientServerQueue;
 std::array<Packet, 4> ServerClientArray;
 
 // 동기화 객체
-HANDLE WriteEvent;
-CRITICAL_SECTION CS_CSQ;
-CRITICAL_SECTION CS_SCA;
+HANDLE ClientInfoArray_Event;
+CRITICAL_SECTION ClientServerQueue_CS;
+CRITICAL_SECTION ServerClientArray_CS;
 
 int main(int argc, char* argv[]) {
 	// 데이터 통신에 사용할 변수
@@ -21,9 +21,9 @@ int main(int argc, char* argv[]) {
 	int addrlen;
 
 	// 동기화 객체 생성
-	WriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	InitializeCriticalSection(&CS_CSQ);
-	InitializeCriticalSection(&CS_SCA);
+	ClientInfoArray_Event = CreateEvent(NULL, FALSE, FALSE, NULL);
+	InitializeCriticalSection(&ClientServerQueue_CS);
+	InitializeCriticalSection(&ServerClientArray_CS);
 
 	// 윈속 초기화
 	WSADATA wsa;
@@ -46,11 +46,20 @@ int main(int argc, char* argv[]) {
 	retval = listen(listen_sock, SOMAXCONN);
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
+	// 스레드 인자 
+	ThreadArg tArg;
+	tArg.SetSocket(NULL);
+	tArg.SetClientInfoArray(&ClientInfoArray);
+	tArg.SetClientServerQueue(&ClientServerQueue);
+	tArg.SetServerClientArray(&ServerClientArray);
+	tArg.SetClientInfoArrayEvent(&ClientInfoArray_Event);
+	tArg.SetClientServerQueueCS(&ClientServerQueue_CS);
+	tArg.SetServerClientArrayCS(&ServerClientArray_CS);
+
 	// 정보 확인 스레드 생성
-	HANDLE hInfoCheckThread;
-	ThreadArg InfoCheckThreadArg(&ClientInfoArray, &ClientServerQueue, &ServerClientArray, &WriteEvent, &CS_CSQ, &CS_SCA);
-	hInfoCheckThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&InfoCheckThreadArg, 0, NULL);
-	if (hInfoCheckThread != NULL) CloseHandle(hInfoCheckThread);
+	HANDLE hThread;
+	hThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&tArg, 0, NULL);
+	if (hThread != NULL) CloseHandle(hThread);
 
 	while (1) {
 		// accept()
@@ -62,6 +71,10 @@ int main(int argc, char* argv[]) {
 		}
 
 		// 클라이언트 전용 스레드 생성
+		tArg.SetSocket(client_sock);
+		hThread = CreateThread(NULL, 0, ClientServerThread, (LPVOID)&tArg, 0, NULL);
+		if (hThread == NULL) { closesocket(client_sock); }
+		else { CloseHandle(hThread); }
 	}
 
 	// 소켓 닫기
@@ -71,9 +84,9 @@ int main(int argc, char* argv[]) {
 	WSACleanup();
 
 	// 동기화 객체 제거
-	DeleteCriticalSection(&CS_CSQ);
-	DeleteCriticalSection(&CS_SCA);
-	CloseHandle(WriteEvent);
+	DeleteCriticalSection(&ServerClientArray_CS);
+	DeleteCriticalSection(&ClientServerQueue_CS);
+	CloseHandle(ClientInfoArray_Event);
 	
 	return 0;
 }

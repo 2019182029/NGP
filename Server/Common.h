@@ -22,16 +22,32 @@ private:
 
 class ThreadArg {
 private:
-	std::array<Packet, 4>* m_CIA;
-	std::queue<Packet>* m_CSQ;
-	std::array<Packet, 4>* m_SCA;
+	SOCKET m_sock;
 
-	HANDLE* m_WriteEvent;
-	CRITICAL_SECTION* m_CS_CSQ;
-	CRITICAL_SECTION* m_CS_SCA;
+	std::array<Packet, 4>* m_ClientInfoArray;
+	std::queue<Packet>* m_ClientServerQueue;
+	std::array<Packet, 4>* m_ServerClientArray;
+
+	HANDLE* m_ClientInfoArray_Event;
+	CRITICAL_SECTION* m_ClientServerQueue_CS;
+	CRITICAL_SECTION* m_ServerClientArray_CS;
 
 public:
-	ThreadArg(std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, std::array<Packet, 4>* SCA, HANDLE* WriteEvent, CRITICAL_SECTION* CS_CSQ, CRITICAL_SECTION* CS_SCA) : m_CIA(CIA), m_CSQ(CSQ), m_SCA(SCA), m_WriteEvent(WriteEvent), m_CS_CSQ(CS_CSQ), m_CS_SCA(CS_SCA) {};
+	void SetSocket(SOCKET sock) { m_sock = sock; }
+	void SetClientInfoArray(std::array<Packet, 4>* ClientInfoArray) { m_ClientInfoArray = ClientInfoArray; }
+	void SetClientServerQueue(std::queue<Packet>* ClientServerQueue) { m_ClientServerQueue = ClientServerQueue; }
+	void SetServerClientArray(std::array<Packet, 4>* ServerClientArray) { m_ServerClientArray = ServerClientArray; }
+	void SetClientInfoArrayEvent(HANDLE* ClientInfoArray_Event) { m_ClientInfoArray_Event = ClientInfoArray_Event; }
+	void SetClientServerQueueCS(CRITICAL_SECTION* ClientServerQueue_CS) { m_ClientServerQueue_CS = ClientServerQueue_CS; }
+	void SetServerClientArrayCS(CRITICAL_SECTION* ServerClientArray_CS) { m_ServerClientArray_CS = ServerClientArray_CS; }
+
+	SOCKET GetSocket() { return m_sock; }
+	std::array<Packet, 4>* GetClientInfoArray() { return m_ClientInfoArray; }
+	std::queue<Packet>* GetClientServerQueue() { return m_ClientServerQueue; }
+	std::array<Packet, 4>* GetServerClientArray() { return m_ServerClientArray; }
+	HANDLE* GetClientInfoArrayEvent() { return m_ClientInfoArray_Event; }
+	CRITICAL_SECTION* GetClientServerQueueCS() { return m_ClientServerQueue_CS; }
+	CRITICAL_SECTION* GetServerClientArrayCS() { return m_ServerClientArray_CS; }
 };
 
 // 소켓 함수 오류 출력 후 종료
