@@ -18,6 +18,18 @@ class Packet {
 private:
 	float x, y;
 	BYTE state[2];
+
+public:
+	bool GetReadyBit() { return (state[1] & 0b10000000) >> 7; }
+	bool GetStartBit() { return (state[1] & 0b01000000) >> 6; }
+	bool GetValidBit() { return (state[1] & 0b00100000) >> 5; }
+	int GetPlayerNumber() { return (state[1] & 0b00011000) >> 3; }
+	bool HasItem() { return (state[1] & 0b00000100) >> 2; }
+	bool IsItemApplied() { return (state[1] & 0b00000010) >> 1; }
+	bool IsSurviving() { return state[1] & 0b00000001; }
+	int GetCurrentSurface() { return (state[2] & 0b11000000) >> 6; }
+	int GetKeyState() { return (state[2] & 0b00111100) >> 2; }
+	int GetSeed() { return state[2] & 0b00000011; }
 };
 
 class ThreadArg {
