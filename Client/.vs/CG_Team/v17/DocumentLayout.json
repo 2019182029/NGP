@@ -1,34 +1,46 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\",
+  "WorkspaceRootPath": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\class.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\class.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\class.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\class.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\packet.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\packet.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\main.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\main.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\obj.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\obj.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\obj.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\obj.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\packet.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\packet.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\vertex.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\vertex.glsl||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\vertex.glsl||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\obj.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\obj.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\class.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\class.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\main.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\main.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\Common.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\Common.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\class.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\class.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\obj.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{95B4A532-3408-43E3-9D4E-4088A02442D4}|2dGP_7\\2dGP_7.vcxproj|solutionrelative:2dGP_7\\obj.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,15 +50,53 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 9,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
+              "Title": "Common.h",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\Common.h",
+              "RelativeDocumentMoniker": "2dGP_7\\Common.h",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\Common.h",
+              "RelativeToolTip": "2dGP_7\\Common.h",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABQAAAAaAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-11-08T05:37:42.957Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "packet.cpp",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\packet.cpp",
+              "RelativeDocumentMoniker": "2dGP_7\\packet.cpp",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\packet.cpp",
+              "RelativeToolTip": "2dGP_7\\packet.cpp",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAwAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-11-06T08:58:06.564Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "packet.h",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\packet.h",
+              "RelativeDocumentMoniker": "2dGP_7\\packet.h",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\packet.h",
+              "RelativeToolTip": "2dGP_7\\packet.h",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAABkAAAAZAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-11-06T08:57:50.231Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "vertex.glsl",
-              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\vertex.glsl",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\vertex.glsl",
               "RelativeDocumentMoniker": "2dGP_7\\vertex.glsl",
-              "ToolTip": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\vertex.glsl",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\vertex.glsl",
               "RelativeToolTip": "2dGP_7\\vertex.glsl",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
@@ -55,78 +105,74 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 2,
               "Title": "obj.cpp",
-              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\obj.cpp",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\obj.cpp",
               "RelativeDocumentMoniker": "2dGP_7\\obj.cpp",
-              "ToolTip": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\obj.cpp",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\obj.cpp",
               "RelativeToolTip": "2dGP_7\\obj.cpp",
-              "ViewState": "AQIAADYAAAAAAAAAAAAAABEAAAAqAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABEAAAAqAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-11-04T04:13:17.688Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "main.h",
-              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\main.h",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\main.h",
               "RelativeDocumentMoniker": "2dGP_7\\main.h",
-              "ToolTip": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\main.h",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\main.h",
               "RelativeToolTip": "2dGP_7\\main.h",
-              "ViewState": "AQIAAAYAAAAAAAAAAAAiwBIAAAARAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-11-04T04:12:34.252Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-11-04T04:12:34.252Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 9,
               "Title": "obj.h",
-              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\obj.h",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\obj.h",
               "RelativeDocumentMoniker": "2dGP_7\\obj.h",
-              "ToolTip": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\obj.h",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\obj.h",
               "RelativeToolTip": "2dGP_7\\obj.h",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAABQAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-11-04T04:11:45.143Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-11-04T04:11:45.143Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "class.cpp",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\class.cpp",
+              "RelativeDocumentMoniker": "2dGP_7\\class.cpp",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\class.cpp",
+              "RelativeToolTip": "2dGP_7\\class.cpp",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABwAAAA0AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-11-04T04:11:07.379Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "class.h",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\class.h",
+              "RelativeDocumentMoniker": "2dGP_7\\class.h",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\class.h",
+              "RelativeToolTip": "2dGP_7\\class.h",
+              "ViewState": "AQIAADcAAAAAAAAAAAAiwE0AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-11-04T04:10:57.832Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "class.cpp",
-              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\class.cpp",
-              "RelativeDocumentMoniker": "2dGP_7\\class.cpp",
-              "ToolTip": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\class.cpp",
-              "RelativeToolTip": "2dGP_7\\class.cpp",
-              "ViewState": "AQIAADAAAAAAAAAAAAAAAFgAAAAmAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2024-11-04T04:11:07.379Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "class.h",
-              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\class.h",
-              "RelativeDocumentMoniker": "2dGP_7\\class.h",
-              "ToolTip": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\class.h",
-              "RelativeToolTip": "2dGP_7\\class.h",
-              "ViewState": "AQIAADcAAAAAAAAAAAAiwE0AAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-11-04T04:10:57.832Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "main.cpp",
-              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\main.cpp",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\main.cpp",
               "RelativeDocumentMoniker": "2dGP_7\\main.cpp",
-              "ToolTip": "C:\\Users\\jkkks\\Desktop\\\uCEF4\uD4E8\uD130\uADF8\uB798\uD53D\uC2A4 2\uBC186\uD300 \uCD5C\uC885 \uD504\uB85C\uC81D\uD2B8 \uC81C\uCD9C\\3. \uC18C\uC2A4\uCF54\uB4DC \uBC0F \uB9AC\uC18C\uC2A4 \uD30C\uC77C(\uC194\uB8E8\uC158\uD30C\uC77C \uD3EC\uD568)\\2dGP_7\\main.cpp",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Client\\2dGP_7\\main.cpp",
               "RelativeToolTip": "2dGP_7\\main.cpp",
-              "ViewState": "AQIAAD8AAAAAAAAAAAAAAEUAAAAAAAAA",
+              "ViewState": "AQIAAMMAAAAAAAAAAAAAANIAAAAcAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-10-18T05:00:06.93Z",
               "EditorCaption": ""
