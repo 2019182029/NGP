@@ -23,10 +23,14 @@ void DisplayError(const char* msg);
 // GUI 처리 및 소켓 통신을 위한 스레드 함수
 DWORD WINAPI GuiAndClientMain(LPVOID arg);
 
-SOCKET sock; // 소켓
-char buf[BUFSIZE + 1]; // 데이터 송수신 버퍼
-HWND hReadyButton, hCancelButton, hExitButton, hEditIP; // 버튼 및 IP 입력 필드 핸들
-HINSTANCE g_inst; // 인스턴스 핸들
+SOCKET sock;
+char buf[BUFSIZE + 1];
+HWND hReadyButton, hCancelButton, hExitButton, hEditIP, hConnectButton; // Added hConnectButton for connect functionality
+HINSTANCE g_inst;
+
+//준비완료 준비 취소 
+HANDLE hReceiveThread = NULL;
+bool gameReady = false;
 
 
 GLuint vao;
@@ -122,6 +126,30 @@ bool game_check = true;
 bool left_button = false;
 int playerHP = 100;
 
+DWORD WINAPI ReceiveDataThread(LPVOID arg) {
+    HWND hDlg = reinterpret_cast<HWND>(arg);
+    Packet recvPacket;
+    u_long mode = 1;
+    ioctlsocket(sock, FIONBIO, &mode); // Set non-blocking mode
+
+    while (gameReady) {
+        int bytesReceived = recv(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+        if (bytesReceived > 0) {
+            // 게임 시작 비트를 확인하고 GUI 종료 및 스레드 종료
+            if (recvPacket.isGameStarted()) {
+                EndDialog(hDlg, IDCANCEL); // GUI 대화 상자를 종료
+                ExitThread(0);             // 스레드 종료
+            }
+        }
+        else if (bytesReceived == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
+            DisplayError("recv()");
+            ExitThread(0); // 에러 시 스레드 종료
+        }
+        Sleep(10); // Small delay to avoid high CPU usage
+    }
+
+    return 0;
+}
 
 // GUI 및 소켓 통신을 처리하는 스레드 함수
 DWORD WINAPI GuiAndClientMain(LPVOID arg)
@@ -130,21 +158,18 @@ DWORD WINAPI GuiAndClientMain(LPVOID arg)
     return 0;
 }
 
-// 대화상자 프로시저
-INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
+INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
     case WM_INITDIALOG:
-        // IP 입력 필드 초기화
         hEditIP = GetDlgItem(hDlg, IDC_IP);
-
-        // 버튼 초기화
+        hConnectButton = GetDlgItem(hDlg, ID_CONNECT);  // Connect button
         hReadyButton = GetDlgItem(hDlg, ID_READY);
         hCancelButton = GetDlgItem(hDlg, ID_CANCEL);
         hExitButton = GetDlgItem(hDlg, ID_EXIT);
-        EnableWindow(hCancelButton, FALSE); // "준비 취소" 버튼은 비활성화
 
-        // 소켓 초기화 및 연결 설정
+        EnableWindow(hReadyButton, FALSE); // Disable "Ready" initially
+        EnableWindow(hCancelButton, FALSE); // Disable "Cancel" initially
+
         sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock == INVALID_SOCKET) {
             DisplayError("socket()");
@@ -155,54 +180,84 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
-        case ID_READY:
-            EnableWindow(hReadyButton, FALSE); // "준비 완료" 버튼 비활성화
-            EnableWindow(hCancelButton, TRUE); // "준비 취소" 버튼 활성화
-
-            // IP 주소 가져오기
+        case ID_CONNECT: {  // Connect button clicked
+            // Retrieve IP address from input field
             DWORD ip;
             SendMessage(hEditIP, IPM_GETADDRESS, 0, (LPARAM)&ip);
+            BYTE part1 = FIRST_IPADDRESS(ip);
+            BYTE part2 = SECOND_IPADDRESS(ip);
+            BYTE part3 = THIRD_IPADDRESS(ip);
+            BYTE part4 = FOURTH_IPADDRESS(ip);
+            snprintf(buf, BUFSIZE, "%d.%d.%d.%d", part1, part2, part3, part4);
 
-            // IP 주소를 각 부분으로 나누기
-            {
-                BYTE part1 = FIRST_IPADDRESS(ip);
-                BYTE part2 = SECOND_IPADDRESS(ip);
-                BYTE part3 = THIRD_IPADDRESS(ip);
-                BYTE part4 = FOURTH_IPADDRESS(ip);
-
-                // IP 주소를 문자열로 변환하여 저장
-                snprintf(buf, BUFSIZE, "%d.%d.%d.%d", part1, part2, part3, part4);
-            }
-
-            // 서버 연결 시도
+            // Set up server address structure
             struct sockaddr_in serverAddr;
             serverAddr.sin_family = AF_INET;
             serverAddr.sin_port = htons(SERVERPORT);
             serverAddr.sin_addr.s_addr = inet_addr(buf);
 
+            // Create socket
+            sock = socket(AF_INET, SOCK_STREAM, 0);
+            if (sock == INVALID_SOCKET) {
+                DisplayError("socket()"); // Display error if socket creation fails
+                return TRUE;
+            }
+
+            // Attempt to connect to the server
             if (connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
                 DisplayError("connect()");
                 closesocket(sock);
                 sock = INVALID_SOCKET;
-                EnableWindow(hReadyButton, TRUE);
-                EnableWindow(hCancelButton, FALSE);
                 return TRUE;
             }
 
+            // Display connection success message and enable "Ready" button
             DisplayText("준비 완료되었습니다. 서버에 연결되었습니다. IP 주소: %s\n", buf);
+            EnableWindow(hReadyButton, TRUE);
+            EnableWindow(hConnectButton, FALSE);  // Disable "Connect" button after successful connection
+            return TRUE;
+        }
+
+        // Ready 상태일 때 수신 스레드를 생성
+        case ID_READY:
+            packetclient.setReady(true);
+            send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
+
+            EnableWindow(hReadyButton, FALSE);
+            EnableWindow(hCancelButton, TRUE);
+            DisplayText("Ready status confirmed.\n");
+
+            // hDlg 핸들을 인자로 전달하여 스레드를 생성
+            gameReady = true;
+            hReceiveThread = CreateThread(NULL, 0, ReceiveDataThread, hDlg, 0, NULL);
             return TRUE;
 
         case ID_CANCEL:
-            EnableWindow(hReadyButton, TRUE); // "준비 완료" 버튼 활성화
-            EnableWindow(hCancelButton, FALSE); // "준비 취소" 버튼 비활성화
-            DisplayText("준비 취소되었습니다.\n");
-            SendMessage(hEditIP, IPM_CLEARADDRESS, 0, 0); // 입력 필드 초기화
+            // Packet에서 준비 비트를 해제
+            packetclient.setReady(false);
+
+            // 서버에 변경된 Packet을 전송
+            send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
+
+            // 데이터 수신을 중지하고 스레드를 종료
+            gameReady = false;
+            if (hReceiveThread) {
+                WaitForSingleObject(hReceiveThread, INFINITE);
+                CloseHandle(hReceiveThread);
+                hReceiveThread = NULL;
+            }
+
+            // 버튼 상태 변경
+            EnableWindow(hReadyButton, TRUE);
+            EnableWindow(hCancelButton, FALSE);
+            DisplayText("준비 상태가 취소되었습니다.\n");
+
             return TRUE;
 
         case ID_EXIT:
-            EndDialog(hDlg, IDCANCEL); // 대화 상자 닫기
+            EndDialog(hDlg, IDCANCEL);
             if (sock != INVALID_SOCKET) {
-                closesocket(sock); // 소켓 닫기
+                closesocket(sock);
                 sock = INVALID_SOCKET;
             }
             return TRUE;
@@ -212,9 +267,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-// 에디트 컨트롤 출력 함수
-void DisplayText(const char* fmt, ...)
-{
+void DisplayText(const char* fmt, ...) {
     va_list arg;
     va_start(arg, fmt);
     char cbuf[BUFSIZE * 2];
@@ -226,18 +279,14 @@ void DisplayText(const char* fmt, ...)
     SendMessageA(GetDlgItem(GetParent(hReadyButton), IDC_EDIT2), EM_REPLACESEL, FALSE, (LPARAM)cbuf);
 }
 
-// 소켓 함수 오류 출력
-void DisplayError(const char* msg)
-{
+void DisplayError(const char* msg) {
     LPVOID lpMsgBuf;
-    FormatMessageA(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, WSAGetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (char*)&lpMsgBuf, 0, NULL);
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(),
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (char*)&lpMsgBuf, 0, NULL);
     DisplayText("[%s] %s\r\n", msg, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
 }
+
 
 
 int main(int argc, char** argv)
@@ -763,7 +812,7 @@ GLvoid Motion(int x, int y) {
             
             if (light.cameraRotation == 0)
             {
-                main_character.y = 0.25f + 0.1f * main_character.jump_scale;
+                main_character.y =  0.1f * main_character.jump_scale;
                 main_character.x += rotationChange;
                 light.light_y = 8.0f;
             }

@@ -3,6 +3,7 @@
 // GUITCPClient.rc에서 사용되고 있습니다.
 #define IDD_DIALOG1     101     // 메인 다이얼로그 ID
 #define IDC_IP          1001    // SysIPAddress32 컨트롤 ID
+#define ID_CONNECT      1004    // 새로 추가된 연결 버튼 ID
 #define ID_READY        1005    // 준비 완료 버튼 ID
 #define ID_CANCEL       1006    // 준비 취소 버튼 ID
 #define ID_EXIT         1007    // 나가기 버튼 ID
