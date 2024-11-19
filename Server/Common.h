@@ -18,6 +18,12 @@ class Packet {
 private:
 	float x, y;
 	BYTE state[2];
+
+public:
+	void setValid(bool isValid) { state[0] = (state[0] & 0b01111111) | (isValid << 7); }
+	void setPlayerNumber(int num) { state[0] = (state[0] & 0b10011111) | ((num & 0b11) << 5); }
+	BYTE getValid() const { return (state[0] >> 7) & 0b1; }
+	int getPlayerNumber() const { return (state[0] >> 5) & 0b11; }
 };
 
 class InfoCheckThreadArg {
