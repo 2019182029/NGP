@@ -3,20 +3,18 @@
 
 #define SERVERPORT 9000
 
-// 오류 출력 함수
-void err_quit(const char* msg);
-void err_display(const char* msg);
-void err_display(int errcode);
-
 // 서버 전역 변수
 std::array<Packet, 4> ClientInfoArray;
 std::queue<Packet> ClientServerQueue;
 std::array<Packet, 4> ServerClientArray;
 
 // 동기화 객체
-HANDLE WriteEvent;
-CRITICAL_SECTION CS_CSQ;
-CRITICAL_SECTION CS_SCA;
+HANDLE ClientInfoArray_Event;
+CRITICAL_SECTION ClientServerQueue_CS;
+CRITICAL_SECTION ServerClientArray_CS;
+
+// 게임 시작 여부
+bool isGameStart = false;
 
 int main(int argc, char* argv[]) {
 	// 데이터 통신에 사용할 변수
@@ -26,9 +24,9 @@ int main(int argc, char* argv[]) {
 	int addrlen;
 
 	// 동기화 객체 생성
-	WriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	InitializeCriticalSection(&CS_CSQ);
-	InitializeCriticalSection(&CS_SCA);
+	ClientInfoArray_Event = CreateEvent(NULL, FALSE, FALSE, NULL);
+	InitializeCriticalSection(&ClientServerQueue_CS);
+	InitializeCriticalSection(&ServerClientArray_CS);
 
 	// 윈속 초기화
 	WSADATA wsa;
@@ -51,12 +49,21 @@ int main(int argc, char* argv[]) {
 	retval = listen(listen_sock, SOMAXCONN);
 	if (retval == SOCKET_ERROR) err_quit("listen()");
 
+	// 정보 확인 스레드 인자 
+	ThreadArg InfoCheckThreadArg;
+	InfoCheckThreadArg.SetSocket(NULL);
+	InfoCheckThreadArg.SetClientInfoArray(&ClientInfoArray);
+	InfoCheckThreadArg.SetClientServerQueue(&ClientServerQueue);
+	InfoCheckThreadArg.SetServerClientArray(&ServerClientArray);
+	InfoCheckThreadArg.SetClientInfoArrayEvent(&ClientInfoArray_Event);
+	InfoCheckThreadArg.SetClientServerQueueCS(&ClientServerQueue_CS);
+	InfoCheckThreadArg.SetServerClientArrayCS(&ServerClientArray_CS);
+	InfoCheckThreadArg.SetGameStartOrNot(&isGameStart);
+
 	// 정보 확인 스레드 생성
-	HANDLE hInfoCheckThread;
-	InfoCheckThreadArg InfoCheckThreadArg;
-	InfoCheckThreadArg.SetArg(&ClientInfoArray, &ClientServerQueue, &ServerClientArray, &WriteEvent, &CS_CSQ, &CS_SCA);
-	hInfoCheckThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&InfoCheckThreadArg, 0, NULL);
-	if (hInfoCheckThread != NULL) CloseHandle(hInfoCheckThread);
+	HANDLE hThread;
+	hThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&InfoCheckThreadArg, 0, NULL);
+	if (hThread != NULL) CloseHandle(hThread);
 
 	while (1) {
 		// accept()
@@ -67,7 +74,24 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 
+		// 클라이언트 전용 스레드 인자 
+		ThreadArg* ClientServerThreadArg = new ThreadArg();
+		ClientServerThreadArg->SetSocket(client_sock);
+		ClientServerThreadArg->SetClientInfoArray(&ClientInfoArray);
+		ClientServerThreadArg->SetClientServerQueue(&ClientServerQueue);
+		ClientServerThreadArg->SetServerClientArray(&ServerClientArray);
+		ClientServerThreadArg->SetClientInfoArrayEvent(&ClientInfoArray_Event);
+		ClientServerThreadArg->SetClientServerQueueCS(&ClientServerQueue_CS);
+		ClientServerThreadArg->SetServerClientArrayCS(&ServerClientArray_CS);
+		ClientServerThreadArg->SetGameStartOrNot(&isGameStart);
+
 		// 클라이언트 전용 스레드 생성
+		hThread = CreateThread(NULL, 0, ClientServerThread, (LPVOID)ClientServerThreadArg, 0, NULL);
+		if (hThread == NULL) { 
+			delete ClientServerThreadArg;
+			closesocket(client_sock); 
+		}
+		else { CloseHandle(hThread); }
 	}
 
 	// 소켓 닫기
@@ -77,46 +101,9 @@ int main(int argc, char* argv[]) {
 	WSACleanup();
 
 	// 동기화 객체 제거
-	DeleteCriticalSection(&CS_CSQ);
-	DeleteCriticalSection(&CS_SCA);
-	CloseHandle(WriteEvent);
+	DeleteCriticalSection(&ServerClientArray_CS);
+	DeleteCriticalSection(&ClientServerQueue_CS);
+	CloseHandle(ClientInfoArray_Event);
 	
 	return 0;
-}
-
-// 소켓 함수 오류 출력 후 종료
-void err_quit(const char* msg) {
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf, 0, NULL);
-	MessageBoxA(NULL, (const char*)lpMsgBuf, msg, MB_ICONERROR);
-	LocalFree(lpMsgBuf);
-	exit(1);
-}
-
-// 소켓 함수 오류 출력
-void err_display(const char* msg) {
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, WSAGetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf, 0, NULL);
-	printf("[%s] %s\n", msg, (char*)lpMsgBuf);
-	LocalFree(lpMsgBuf);
-}
-
-// 소켓 함수 오류 출력
-void err_display(int errcode) {
-	LPVOID lpMsgBuf;
-	FormatMessageA(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, errcode,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(char*)&lpMsgBuf, 0, NULL);
-	printf("[오류] %s\n", (char*)lpMsgBuf);
-	LocalFree(lpMsgBuf);
 }

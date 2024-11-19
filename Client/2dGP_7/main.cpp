@@ -1,10 +1,41 @@
 #include "main.h"
 #include "obj.h"
 #include "class.h"
+#include "packet.h"
+#include "Common.h"
+#include "resource.h"
 #pragma comment(lib, "winmm")
 #include <mmsystem.h>
 
+#include <Commctrl.h> // 공용 컨트롤 헤더 추가
+
+#pragma comment(lib, "Comctl32.lib") // 공용 컨트롤 라이브러리 링크
+
+#define SERVERPORT 9000
+#define BUFSIZE    512
+
+// 대화상자 프로시저
+INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
+// 에디트 컨트롤 출력 함수
+void DisplayText(const char* fmt, ...);
+// 소켓 함수 오류 출력
+void DisplayError(const char* msg);
+// GUI 처리 및 소켓 통신을 위한 스레드 함수
+DWORD WINAPI GuiAndClientMain(LPVOID arg);
+
+SOCKET sock;
+char buf[BUFSIZE + 1];
+HWND hReadyButton, hCancelButton, hExitButton, hEditIP, hConnectButton; // Added hConnectButton for connect functionality
+HINSTANCE g_inst;
+
+//준비완료 준비 취소 
+HANDLE hReceiveThread = NULL;
+bool gameReady = false;
+
+
 GLuint vao;
+
+Packet packetclient;
 
 GLchar* vertexSource, * fragmentSource;
 GLuint vertexShader, fragmentShader;
@@ -27,6 +58,27 @@ GLuint teapotNomalVbo;
 
 std::default_random_engine engine2(std::random_device{}());
 std::uniform_real_distribution<double> random_model(1, 6);
+
+obs wall;
+obss main_character(cubePosVbo2, cubeNomalVbo2);
+
+std::vector<object_won> objects;
+
+objRead RockReader;
+GLint RockObject = RockReader.loadObj_normalize_center("rock.obj");
+
+objRead CubeReader;
+GLint CubeObject = CubeReader.loadObj_normalize_center("cube.obj");
+
+objRead sphere;
+GLint sphereObject = sphere.loadObj_normalize_center("sphere.obj");
+
+objRead teapotReader;
+GLint teapotObject = teapotReader.loadObj_normalize_center("teapot.obj");
+
+GLfloat Color[4]{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+light_set light;
 
 void setOrthographicProjection() {
     // 현재 행렬 모드 저장
@@ -57,7 +109,6 @@ void resetPerspectiveProjection() {
     glPopMatrix();
 }
 
-
 void renderBitmapString(float x, float y, void* font, const char* string) {
     const char* c;
     glRasterPos2f(x, y);
@@ -66,42 +117,205 @@ void renderBitmapString(float x, float y, void* font, const char* string) {
     }
 }
 
-
-
-obs wall;
-obss main_character(cubePosVbo2,cubeNomalVbo2);
-
-std::vector<object_won> objects;
-
-objRead RockReader;
-GLint RockObject = RockReader.loadObj_normalize_center("rock.obj");
-
-objRead CubeReader;
-GLint CubeObject = CubeReader.loadObj_normalize_center("cube.obj");
-
-objRead sphere;
-GLint sphereObject = sphere.loadObj_normalize_center("sphere.obj");
-
-objRead teapotReader;
-GLint teapotObject = teapotReader.loadObj_normalize_center("teapot.obj");
-
-GLfloat Color[4]{ 0.0f, 0.0f, 0.0f, 1.0f };
-
 bool checkCollision(object_won& , obss& );
-
 
 int move_check{};
 int jump_check = 3;
 int sever_level = 0;
 bool game_check = true;
 bool left_button = false;
-
 int playerHP = 100;
 
-light_set light;
-#define GAME_BGM "gamebgm.wav"
+DWORD WINAPI ReceiveDataThread(LPVOID arg) {
+    HWND hDlg = reinterpret_cast<HWND>(arg);
+    Packet recvPacket;
+    u_long mode = 1;
+    ioctlsocket(sock, FIONBIO, &mode); // Set non-blocking mode
+
+    while (gameReady) {
+        int bytesReceived = recv(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+        if (bytesReceived > 0) {
+            // 게임 시작 비트를 확인하고 GUI 종료 및 스레드 종료
+            if (recvPacket.isGameStarted()) {
+                EndDialog(hDlg, IDCANCEL); // GUI 대화 상자를 종료
+                ExitThread(0);             // 스레드 종료
+            }
+        }
+        else if (bytesReceived == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
+            DisplayError("recv()");
+            ExitThread(0); // 에러 시 스레드 종료
+        }
+        Sleep(10); // Small delay to avoid high CPU usage
+    }
+
+    return 0;
+}
+
+// GUI 및 소켓 통신을 처리하는 스레드 함수
+DWORD WINAPI GuiAndClientMain(LPVOID arg)
+{
+    DialogBox(g_inst, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DlgProc);
+    return 0;
+}
+
+INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_INITDIALOG:
+        hEditIP = GetDlgItem(hDlg, IDC_IP);
+        hConnectButton = GetDlgItem(hDlg, ID_CONNECT);  // Connect button
+        hReadyButton = GetDlgItem(hDlg, ID_READY);
+        hCancelButton = GetDlgItem(hDlg, ID_CANCEL);
+        hExitButton = GetDlgItem(hDlg, ID_EXIT);
+
+        EnableWindow(hReadyButton, FALSE); // Disable "Ready" initially
+        EnableWindow(hCancelButton, FALSE); // Disable "Cancel" initially
+
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock == INVALID_SOCKET) {
+            DisplayError("socket()");
+            EndDialog(hDlg, IDCANCEL);
+            return FALSE;
+        }
+        return TRUE;
+
+    case WM_COMMAND:
+        switch (LOWORD(wParam)) {
+        case ID_CONNECT: {  // Connect button clicked
+            // Retrieve IP address from input field
+            DWORD ip;
+            SendMessage(hEditIP, IPM_GETADDRESS, 0, (LPARAM)&ip);
+            BYTE part1 = FIRST_IPADDRESS(ip);
+            BYTE part2 = SECOND_IPADDRESS(ip);
+            BYTE part3 = THIRD_IPADDRESS(ip);
+            BYTE part4 = FOURTH_IPADDRESS(ip);
+            snprintf(buf, BUFSIZE, "%d.%d.%d.%d", part1, part2, part3, part4);
+
+            // Set up server address structure
+            struct sockaddr_in serverAddr;
+            serverAddr.sin_family = AF_INET;
+            serverAddr.sin_port = htons(SERVERPORT);
+            serverAddr.sin_addr.s_addr = inet_addr(buf);
+
+            // Create socket
+            sock = socket(AF_INET, SOCK_STREAM, 0);
+            if (sock == INVALID_SOCKET) {
+                DisplayError("socket()"); // Display error if socket creation fails
+                return TRUE;
+            }
+
+            // Attempt to connect to the server
+            if (connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+                DisplayError("connect()");
+                closesocket(sock);
+                sock = INVALID_SOCKET;
+                return TRUE;
+            }
+
+            // Display connection success message and enable "Ready" button
+            DisplayText("준비 완료되었습니다. 서버에 연결되었습니다. IP 주소: %s\n", buf);
+            EnableWindow(hReadyButton, TRUE);
+            EnableWindow(hConnectButton, FALSE);  // Disable "Connect" button after successful connection
+            return TRUE;
+        }
+
+        // Ready 상태일 때 수신 스레드를 생성
+        case ID_READY:
+            packetclient.setReady(true);
+            send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
+
+            EnableWindow(hReadyButton, FALSE);
+            EnableWindow(hCancelButton, TRUE);
+            DisplayText("Ready status confirmed.\n");
+
+            // hDlg 핸들을 인자로 전달하여 스레드를 생성
+            gameReady = true;
+            hReceiveThread = CreateThread(NULL, 0, ReceiveDataThread, hDlg, 0, NULL);
+            return TRUE;
+
+        case ID_CANCEL:
+            // Packet에서 준비 비트를 해제
+            packetclient.setReady(false);
+
+            // 서버에 변경된 Packet을 전송
+            send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
+
+            // 데이터 수신을 중지하고 스레드를 종료
+            gameReady = false;
+            if (hReceiveThread) {
+                WaitForSingleObject(hReceiveThread, INFINITE);
+                CloseHandle(hReceiveThread);
+                hReceiveThread = NULL;
+            }
+
+            // 버튼 상태 변경
+            EnableWindow(hReadyButton, TRUE);
+            EnableWindow(hCancelButton, FALSE);
+            DisplayText("준비 상태가 취소되었습니다.\n");
+
+            return TRUE;
+
+        case ID_EXIT:
+            EndDialog(hDlg, IDCANCEL);
+            if (sock != INVALID_SOCKET) {
+                closesocket(sock);
+                sock = INVALID_SOCKET;
+            }
+            return TRUE;
+        }
+        return FALSE;
+    }
+    return FALSE;
+}
+
+void DisplayText(const char* fmt, ...) {
+    va_list arg;
+    va_start(arg, fmt);
+    char cbuf[BUFSIZE * 2];
+    vsprintf(cbuf, fmt, arg);
+    va_end(arg);
+
+    int nLength = GetWindowTextLength(GetDlgItem(GetParent(hReadyButton), IDC_EDIT2));
+    SendMessage(GetDlgItem(GetParent(hReadyButton), IDC_EDIT2), EM_SETSEL, nLength, nLength);
+    SendMessageA(GetDlgItem(GetParent(hReadyButton), IDC_EDIT2), EM_REPLACESEL, FALSE, (LPARAM)cbuf);
+}
+
+void DisplayError(const char* msg) {
+    LPVOID lpMsgBuf;
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(),
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (char*)&lpMsgBuf, 0, NULL);
+    DisplayText("[%s] %s\r\n", msg, (char*)lpMsgBuf);
+    LocalFree(lpMsgBuf);
+}
+
+
+
 int main(int argc, char** argv)
 {
+    g_inst = GetModuleHandle(NULL); // 인스턴스 핸들을 main에서 직접 가져옴
+
+    // 공용 컨트롤 초기화
+    INITCOMMONCONTROLSEX icex;
+    icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+    icex.dwICC = ICC_INTERNET_CLASSES;
+    InitCommonControlsEx(&icex);
+
+    // 윈속 초기화
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        return 1;
+
+    // GUI 및 소켓 통신 스레드 생성
+    HANDLE hThread = CreateThread(NULL, 0, GuiAndClientMain, NULL, 0, NULL);
+    if (hThread == NULL) {
+        DisplayError("Failed to create hThread");
+        WSACleanup();
+        return 1;
+    }
+
+    WaitForSingleObject(hThread, INFINITE);
+
+    CloseHandle(hThread);
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowPosition(100, 100);
@@ -598,7 +812,7 @@ GLvoid Motion(int x, int y) {
             
             if (light.cameraRotation == 0)
             {
-                main_character.y = 0.25f + 0.1f * main_character.jump_scale;
+                main_character.y =  0.1f * main_character.jump_scale;
                 main_character.x += rotationChange;
                 light.light_y = 8.0f;
             }
