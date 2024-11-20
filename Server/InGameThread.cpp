@@ -52,7 +52,8 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 	auto beforeTime = std::chrono::high_resolution_clock::now();
 	auto currentTime = std::chrono::high_resolution_clock::now();
-	auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
+	auto elapsedTime = std::chrono::microseconds(0);
+	auto totalElapsedTime = std::chrono::microseconds(0);
 
 	Init(&ClientInfo, ((ThreadArg*)arg)->GetClientInfoArray(), ((ThreadArg*)arg)->GetServerClientArray(), ((ThreadArg*)arg)->GetServerClientArrayCS(), ((ThreadArg*)arg)->GetGameStartOrNot());
 
@@ -60,7 +61,20 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 	while (1) {
 		// ClientServerQueue가 비어있지 않다면 ClientInfo 갱신
 		if (!((ThreadArg*)arg)->GetClientServerQueue()->empty()) {  
+			Packet p = ((ThreadArg*)arg)->GetClientServerQueue()->front();  // 큐의 첫 번째 요소 가져오기
 
+			if (p.GetKeyState() & 0001) {  // C 키가 눌린 거라면
+				if (ClientInfo[p.GetPlayerNumber()].GetItemBit()) {  // 해당 플레이어가 아이템을 가지고 있다면
+					for (int i = 0; i < 4; ++i) {
+						if (i != p.GetPlayerNumber()) {  // 해당 플레이어를 제외한 나머지 모든 플레이어에게
+							ClientInfo[i].SetAplliedBit(true);  // 아이템 적용
+						}
+					}
+				}
+			}
+			ClientInfo[p.GetPlayerNumber()].SetKeyState(p.GetKeyState());  // ClientInfo 갱신
+
+			((ThreadArg*)arg)->GetClientServerQueue()->pop();  // 큐의 첫 번째 요소 삭제
 		}
 
 		// 모든 플레이어가 사망했다면 프로그램 종료
@@ -68,18 +82,21 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 		}
 
+		currentTime = std::chrono::high_resolution_clock::now();
+		elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
+		totalElapsedTime += std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
+		beforeTime = std::chrono::high_resolution_clock::now();
+
 		// 클라이언트 이동, 충돌 검사
 		for (auto& packet : ClientInfo) {
 			// 클리아인트 이동 : Position, CurrentSurface
 			// 충돌 검사 : Item, Applied, Surviving
 		}
 
-		currentTime = std::chrono::high_resolution_clock::now();
-		elapsedTime += std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
-
-		// 60분의 1초 경과 시 ServerClientArray 갱신
+		// totalElapsedTime이 60분의 1초를 경과했을 시 ServerClientArray 갱신
 		if (elapsedTime.count() >= 16'667) { 
 
+			totalElapsedTime = std::chrono::microseconds(0);  // totalElapsedTime를 0초로 갱신
 		}
 	}
 
