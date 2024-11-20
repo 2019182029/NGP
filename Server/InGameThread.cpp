@@ -60,6 +60,8 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 	// 게임 루프
 	while (1) {
 		// ClientServerQueue가 비어있지 않다면 ClientInfo 갱신
+		EnterCriticalSection(((ThreadArg*)arg)->GetClientServerQueueCS());
+
 		if (!((ThreadArg*)arg)->GetClientServerQueue()->empty()) {  
 			Packet p = ((ThreadArg*)arg)->GetClientServerQueue()->front();  // 큐의 첫 번째 요소 가져오기
 
@@ -77,9 +79,12 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 			((ThreadArg*)arg)->GetClientServerQueue()->pop();  // 큐의 첫 번째 요소 삭제
 		}
 
+		LeaveCriticalSection(((ThreadArg*)arg)->GetClientServerQueueCS());
+
 		// 모든 플레이어가 사망했다면 프로그램 종료
 		if (!std::count_if(ClientInfo.begin(), ClientInfo.end(), [](const auto& packet) { return packet.GetSurvivingBit() == 0; })) {  
-
+			((ThreadArg*)arg)->SetGameStartOrNot(false);
+			break;
 		}
 
 		currentTime = std::chrono::high_resolution_clock::now();
