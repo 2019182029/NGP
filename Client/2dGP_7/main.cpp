@@ -740,48 +740,46 @@ GLvoid update(int value) {
     }
 }
 
-GLvoid keyboard(unsigned char key, int x, int y)
-{
-    handleEvent(key, true);
-    glutPostRedisplay();
+// 키 상태를 저장하는 변수
+bool wPressed = false;
+bool aPressed = false;
+bool sPressed = false;
+bool dPressed = false;
+
+GLvoid keyboard(unsigned char key, int x, int y) {
+    handleEvent(key, true); // 키가 눌렸을 때
 }
-GLvoid keyUp(unsigned char key, int x, int y)
-{
-    handleEvent(key, false);
-    glutPostRedisplay();
+
+GLvoid keyUp(unsigned char key, int x, int y) {
+    handleEvent(key, false); // 키가 떼졌을 때
 }
 
-GLvoid handleEvent(unsigned char key, bool state)
-{
-    if (state)
-    {
-        switch (key) {
-        case 'z':
-            jump();
-            break;
-       
-        case '2':
-            if (sever_level != 2) {
-                sever_level = 2;
-                glutTimerFunc(90, object_ok, 1);
-            }
-            break;
-        case '3':
-            if (sever_level != 3) {
-                sever_level = 3;
-                objects.clear();
-                glutTimerFunc(90, object_ok, 1);
-            }
-           
-            break;
-        case 'r':
-            game_check = true;
-            sever_level = 0;
-            objects.clear();
-
-            break;
-
+GLvoid handleEvent(unsigned char key, bool state) {
+    switch (key) {
+    case 'w':
+        if (state != wPressed) {
+            wPressed = state;
+            printf("W is %s\n", state ? "pressed" : "released");
         }
+        break;
+    case 'a':
+        if (state != aPressed) {
+            aPressed = state;
+            printf("A is %s\n", state ? "pressed" : "released");
+        }
+        break;
+    case 's':
+        if (state != sPressed) {
+            sPressed = state;
+            printf("S is %s\n", state ? "pressed" : "released");
+        }
+        break;
+    case 'd':
+        if (state != dPressed) {
+            dPressed = state;
+            printf("D is %s\n", state ? "pressed" : "released");
+        }
+        break;
     }
 }
 
