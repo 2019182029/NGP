@@ -4,7 +4,7 @@
 
 DWORD __stdcall InfoCheckThread(LPVOID arg) {
     while (1) {
-        WaitForSingleObject(*((ThreadArg*)arg)->GetClientInfoArrayEvent(), INFINITE);  // ClientInfoArray 갱신 대기
+        WaitForSingleObject(*((ThreadArg*)arg)->GetClientInfoArrayWriteEvent(), INFINITE);  // ClientInfoArray 갱신 대기
 
         if (std::count_if(  // 플레이어 수
             (*((ThreadArg*)arg)->GetClientInfoArray()).begin(),
@@ -19,6 +19,8 @@ DWORD __stdcall InfoCheckThread(LPVOID arg) {
                 })) {
             break;
         }
+
+        SetEvent(((ThreadArg*)arg)->GetClientInfoArrayReadEvent());
     }
 
     HANDLE hThread;

@@ -11,6 +11,7 @@
 
 #include <array>  // ClientInfoArray, ServerClientArray
 #include <queue>  // ClientServerQueue
+#include <chrono>
 
 #pragma comment(lib, "ws2_32") // ws2_32.lib ¸µÅ©
 
@@ -52,7 +53,8 @@ private:
 	std::queue<Packet>* m_ClientServerQueue;
 	std::array<Packet, 4>* m_ServerClientArray;
 
-	HANDLE* m_ClientInfoArray_Event;
+	HANDLE* m_ClientInfoArray_WriteEvent;
+	HANDLE* m_ClientInfoArray_ReadEvent;
 	CRITICAL_SECTION* m_ClientServerQueue_CS;
 	CRITICAL_SECTION* m_ServerClientArray_CS;
 
@@ -63,7 +65,8 @@ public:
 	void SetClientInfoArray(std::array<Packet, 4>* ClientInfoArray) { m_ClientInfoArray = ClientInfoArray; }
 	void SetClientServerQueue(std::queue<Packet>* ClientServerQueue) { m_ClientServerQueue = ClientServerQueue; }
 	void SetServerClientArray(std::array<Packet, 4>* ServerClientArray) { m_ServerClientArray = ServerClientArray; }
-	void SetClientInfoArrayEvent(HANDLE* ClientInfoArray_Event) { m_ClientInfoArray_Event = ClientInfoArray_Event; }
+	void SetClientInfoArrayWriteEvent(HANDLE* ClientInfoArray_WriteEvent) { m_ClientInfoArray_WriteEvent = ClientInfoArray_WriteEvent; }
+	void SetClientInfoArrayReadEvent(HANDLE* ClientInfoArray_ReadEvent) { m_ClientInfoArray_ReadEvent = ClientInfoArray_ReadEvent; }
 	void SetClientServerQueueCS(CRITICAL_SECTION* ClientServerQueue_CS) { m_ClientServerQueue_CS = ClientServerQueue_CS; }
 	void SetServerClientArrayCS(CRITICAL_SECTION* ServerClientArray_CS) { m_ServerClientArray_CS = ServerClientArray_CS; }
 	void SetGameStartOrNot(bool* isGameStarted) { m_isGameStarted = isGameStarted; }
@@ -72,7 +75,8 @@ public:
 	std::array<Packet, 4>* GetClientInfoArray() { return m_ClientInfoArray; }
 	std::queue<Packet>* GetClientServerQueue() { return m_ClientServerQueue; }
 	std::array<Packet, 4>* GetServerClientArray() { return m_ServerClientArray; }
-	HANDLE* GetClientInfoArrayEvent() { return m_ClientInfoArray_Event; }
+	HANDLE* GetClientInfoArrayWriteEvent() { return m_ClientInfoArray_WriteEvent; }
+	HANDLE* GetClientInfoArrayReadEvent() { return m_ClientInfoArray_ReadEvent; }
 	CRITICAL_SECTION* GetClientServerQueueCS() { return m_ClientServerQueue_CS; }
 	CRITICAL_SECTION* GetServerClientArrayCS() { return m_ServerClientArray_CS; }
 	bool* GetGameStartOrNot() { return m_isGameStarted; }
