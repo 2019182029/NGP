@@ -16,7 +16,6 @@ public:
     void setItemApplied(bool itemApplied);
     void setHp(bool hp);
     void setFacingDirection(uint8_t direction);
-    void setKeyPress(uint8_t keyCode);
     void setObstacleSeed(uint8_t seed);
 
     bool isReady() const;
@@ -27,8 +26,14 @@ public:
     bool isItemApplied() const;
     bool getHp() const;
     uint8_t getFacingDirection() const;
-    uint8_t getKeyPress() const;
     uint8_t getObstacleSeed() const;
+
+
+    // 키 상태 업데이트 메서드 추가
+    void setKeyState(char key, bool isPressed);
+
+    // 키 상태 확인 메서드 추가
+    bool getKeyState(char key) const;
 
 private:
     float x, y;          // Player position

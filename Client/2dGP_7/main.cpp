@@ -4,6 +4,9 @@
 #include "packet.h"
 #include "Common.h"
 #include "resource.h"
+
+#include <unordered_map>
+
 #pragma comment(lib, "winmm")
 #include <mmsystem.h>
 
@@ -55,6 +58,13 @@ GLuint hpNomalVbo;
 
 GLuint teapotPosVbo;
 GLuint teapotNomalVbo;
+
+std::unordered_map<char, bool> keyStates = {
+    {'w', false},
+    {'a', false},
+    {'d', false},
+    {'c', false}
+};
 
 std::default_random_engine engine2(std::random_device{}());
 std::uniform_real_distribution<double> random_model(1, 6);
@@ -676,8 +686,6 @@ char* filetobuf(const char* file)
     return buf;
 }
 
-
-
 GLvoid update(int value) {
 
     for (int i = 0; i < objects.size(); i++)
@@ -704,10 +712,6 @@ GLvoid update(int value) {
             }
         }
     }
-
-    
-
-    
 
     if (light.cameraRotation == 0)
     {
@@ -740,47 +744,35 @@ GLvoid update(int value) {
     }
 }
 
-// 키 상태를 저장하는 변수
-bool wPressed = false;
-bool aPressed = false;
-bool sPressed = false;
-bool dPressed = false;
+// 키 상태를 업데이트하고 패킷을 전송하는 함수
+void updateKeyState(char key, bool isPressed) {
+    // 해당 키가 유효한지 확인
+    if (keyStates.find(key) == keyStates.end()) return;
 
-GLvoid keyboard(unsigned char key, int x, int y) {
-    handleEvent(key, true); // 키가 눌렸을 때
-}
+    // 현재 키 상태와 동일하면 무시
+    if (keyStates[key] == isPressed) return;
 
-GLvoid keyUp(unsigned char key, int x, int y) {
-    handleEvent(key, false); // 키가 떼졌을 때
-}
+    // 키 상태 업데이트
+    keyStates[key] = isPressed;
 
-GLvoid handleEvent(unsigned char key, bool state) {
-    switch (key) {
-    case 'w':
-        if (state != wPressed) {
-            wPressed = state;
-            printf("W is %s\n", state ? "pressed" : "released");
-        }
-        break;
-    case 'a':
-        if (state != aPressed) {
-            aPressed = state;
-            printf("A is %s\n", state ? "pressed" : "released");
-        }
-        break;
-    case 's':
-        if (state != sPressed) {
-            sPressed = state;
-            printf("S is %s\n", state ? "pressed" : "released");
-        }
-        break;
-    case 'd':
-        if (state != dPressed) {
-            dPressed = state;
-            printf("D is %s\n", state ? "pressed" : "released");
-        }
-        break;
+    // Packet의 상태 갱신
+    packetclient.setKeyState(key, isPressed);
+
+    if (isPressed) {
+        std::cout << key << " pressed, packet sent\n";
     }
+    else {
+        std::cout << key << " released, packet sent\n";
+    }
+}
+
+// 키 입력 이벤트 처리
+void keyboard(unsigned char key, int x, int y) {
+    updateKeyState(key, true); // 키 눌림 처리
+}
+
+void keyUp(unsigned char key, int x, int y) {
+    updateKeyState(key, false); // 키 떼짐 처리
 }
 
 GLvoid MousePoint(int button, int state, int x, int y) {
