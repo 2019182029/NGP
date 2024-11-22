@@ -9,7 +9,8 @@ std::queue<Packet> ClientServerQueue;
 std::array<Packet, 4> ServerClientArray;
 
 // 동기화 객체
-HANDLE ClientInfoArray_Event;
+HANDLE ClientInfoArray_WriteEvent;
+HANDLE ClientInfoArray_ReadEvent;
 CRITICAL_SECTION ClientServerQueue_CS;
 CRITICAL_SECTION ServerClientArray_CS;
 
@@ -24,7 +25,8 @@ int main(int argc, char* argv[]) {
 	int addrlen;
 
 	// 동기화 객체 생성
-	ClientInfoArray_Event = CreateEvent(NULL, FALSE, FALSE, NULL);
+	ClientInfoArray_WriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	ClientInfoArray_ReadEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
 	InitializeCriticalSection(&ClientServerQueue_CS);
 	InitializeCriticalSection(&ServerClientArray_CS);
 
@@ -55,7 +57,8 @@ int main(int argc, char* argv[]) {
 	InfoCheckThreadArg.SetClientInfoArray(&ClientInfoArray);
 	InfoCheckThreadArg.SetClientServerQueue(&ClientServerQueue);
 	InfoCheckThreadArg.SetServerClientArray(&ServerClientArray);
-	InfoCheckThreadArg.SetClientInfoArrayEvent(&ClientInfoArray_Event);
+	InfoCheckThreadArg.SetClientInfoArrayWriteEvent(&ClientInfoArray_WriteEvent);
+	InfoCheckThreadArg.SetClientInfoArrayReadEvent(&ClientInfoArray_ReadEvent);
 	InfoCheckThreadArg.SetClientServerQueueCS(&ClientServerQueue_CS);
 	InfoCheckThreadArg.SetServerClientArrayCS(&ServerClientArray_CS);
 	InfoCheckThreadArg.SetGameStartOrNot(&isGameStart);
@@ -80,7 +83,8 @@ int main(int argc, char* argv[]) {
 		ClientServerThreadArg->SetClientInfoArray(&ClientInfoArray);
 		ClientServerThreadArg->SetClientServerQueue(&ClientServerQueue);
 		ClientServerThreadArg->SetServerClientArray(&ServerClientArray);
-		ClientServerThreadArg->SetClientInfoArrayEvent(&ClientInfoArray_Event);
+		ClientServerThreadArg->SetClientInfoArrayWriteEvent(&ClientInfoArray_WriteEvent);
+		ClientServerThreadArg->SetClientInfoArrayReadEvent(&ClientInfoArray_ReadEvent);
 		ClientServerThreadArg->SetClientServerQueueCS(&ClientServerQueue_CS);
 		ClientServerThreadArg->SetServerClientArrayCS(&ServerClientArray_CS);
 		ClientServerThreadArg->SetGameStartOrNot(&isGameStart);
@@ -103,7 +107,7 @@ int main(int argc, char* argv[]) {
 	// 동기화 객체 제거
 	DeleteCriticalSection(&ServerClientArray_CS);
 	DeleteCriticalSection(&ClientServerQueue_CS);
-	CloseHandle(ClientInfoArray_Event);
+	CloseHandle(ClientInfoArray_WriteEvent);
 	
 	return 0;
 }
