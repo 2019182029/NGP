@@ -45,6 +45,8 @@ void Init(std::array<Packet, 4>* ClientInfo, std::array<Packet, 4>* ClientInfoAr
 	LeaveCriticalSection(ServerClientArray_CS);
 
 	*isGameStart = true;
+
+	std::cout << "게임 시작" << std::endl;
 }
 
 DWORD __stdcall InGameThread(LPVOID arg) {
@@ -82,10 +84,10 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 		LeaveCriticalSection(((ThreadArg*)arg)->GetClientServerQueueCS());
 
 		// 모든 플레이어가 사망했다면 프로그램 종료
-		if (!std::count_if(ClientInfo.begin(), ClientInfo.end(), [](const auto& packet) { return packet.GetSurvivingBit() == 0; })) {  
+		/*if (!std::count_if(ClientInfo.begin(), ClientInfo.end(), [](const auto& packet) { return packet.GetSurvivingBit() == 0; })) {  
 			((ThreadArg*)arg)->SetGameStartOrNot(false);
 			break;
-		}
+		}*/
 
 		currentTime = std::chrono::high_resolution_clock::now();
 		elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);

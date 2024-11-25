@@ -77,6 +77,11 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 
+		// 접속한 클라이언트 정보 출력
+		char addr[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &clientaddr.sin_addr, addr, sizeof(addr));
+		std::cout << "클라이언트 접속 : IP 주소 = " << addr << ", 포트 번호 = " << ntohs(clientaddr.sin_port) << std::endl;
+
 		// 클라이언트 전용 스레드 인자 
 		ThreadArg* ClientServerThreadArg = new ThreadArg();
 		ClientServerThreadArg->SetSocket(client_sock);
