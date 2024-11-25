@@ -12,6 +12,7 @@
 #include <array>  // ClientInfoArray, ServerClientArray
 #include <queue>  // ClientServerQueue
 #include <chrono>
+#include <iostream>
 
 #pragma comment(lib, "ws2_32") // ws2_32.lib ¸µÅ©
 
@@ -22,27 +23,27 @@ private:
 
 public:
 	void SetPosition(float fx, float fy) { x = fx; y = fy; }
-	void SetReadyBit(bool ready) { state[1] = ready ? (state[1] | 0b10000000) : (state[1] & 0b01111111); }
-	void SetStartBit(bool start) { state[1] = start ? (state[1] | 0b01000000) : (state[1] & 0b10111111); }
-	void SetValidBit(bool valid) { state[1] = valid ? (state[1] | 0b00100000) : (state[1] & 0b11011111); }
-	void SetPlayerNumber(int number) { state[1] = ((state[1] & 0b11100111) | (number << 3)); }
-	void SetItemBit(bool item) { state[1] = item ? (state[1] | 0b00000100) : (state[1] & 0b11111011); }
-	void SetAplliedBit(bool applied) { state[1] = applied ? (state[1] | 0b00000010) : (state[1] & 0b11111101); }
-	void SetSurvivingBit(bool surviving) { state[1] = surviving ? (state[1] | 0b00000001) : (state[1] & 0b11111110); }
-	void SetCurrentSurface(int surface) { state[2] = ((state[2] & 0b00111111) | (surface << 6)); }
-	void SetKeyState(int keyState) { state[2] = ((state[2] & 0b11000011) | (keyState << 4)); }
-	void SetSeed(int seed) { state[2] = ((state[2] & 0b11111100) | seed); }
+	void SetReadyBit(bool ready) { state[0] = ready ? (state[0] | 0b10000000) : (state[0] & 0b01111111); }
+	void SetStartBit(bool start) { state[0] = start ? (state[0] | 0b01000000) : (state[0] & 0b10111111); }
+	void SetValidBit(bool valid) { state[0] = valid ? (state[0] | 0b00100000) : (state[0] & 0b11011111); }
+	void SetPlayerNumber(int number) { state[0] = ((state[0] & 0b11100111) | (number << 3)); }
+	void SetItemBit(bool item) { state[0] = item ? (state[0] | 0b00000100) : (state[0] & 0b11111011); }
+	void SetAplliedBit(bool applied) { state[0] = applied ? (state[0] | 0b00000010) : (state[0] & 0b11111101); }
+	void SetSurvivingBit(bool surviving) { state[0] = surviving ? (state[0] | 0b00000001) : (state[0] & 0b11111110); }
+	void SetCurrentSurface(int surface) { state[1] = ((state[1] & 0b00111111) | (surface << 6)); }
+	void SetKeyState(int keyState) { state[1] = ((state[1] & 0b11000011) | (keyState << 4)); }
+	void SetSeed(int seed) { state[1] = ((state[1] & 0b11111100) | seed); }
 
-	bool GetReadyBit() { return (state[1] & 0b10000000) >> 7; }
-	bool GetStartBit() { return (state[1] & 0b01000000) >> 6; }
-	bool GetValidBit() { return (state[1] & 0b00100000) >> 5; }
-	int GetPlayerNumber() { return (state[1] & 0b00011000) >> 3; }
-	bool GetItemBit() { return (state[1] & 0b00000100) >> 2; }
-	bool GetAppliedBit() { return (state[1] & 0b00000010) >> 1; }
-	bool GetSurvivingBit() { return state[1] & 0b00000001; }
-	int GetCurrentSurface() { return (state[2] & 0b11000000) >> 6; }
-	int GetKeyState() { return (state[2] & 0b00111100) >> 2; }
-	int GetSeed() { return state[2] & 0b00000011; }
+	bool GetReadyBit() { return (state[0] & 0b10000000) >> 7; }
+	bool GetStartBit() { return (state[0] & 0b01000000) >> 6; }
+	bool GetValidBit() { return (state[0] & 0b00100000) >> 5; }
+	int GetPlayerNumber() { return (state[0] & 0b00011000) >> 3; }
+	bool GetItemBit() { return (state[0] & 0b00000100) >> 2; }
+	bool GetAppliedBit() { return (state[0] & 0b00000010) >> 1; }
+	bool GetSurvivingBit() { return state[0] & 0b00000001; }
+	int GetCurrentSurface() { return (state[1] & 0b11000000) >> 6; }
+	int GetKeyState() { return (state[1] & 0b00111100) >> 2; }
+	int GetSeed() { return state[1] & 0b00000011; }
 };
 
 class ThreadArg {
@@ -69,7 +70,7 @@ public:
 	void SetClientInfoArrayReadEvent(HANDLE* ClientInfoArray_ReadEvent) { m_ClientInfoArray_ReadEvent = ClientInfoArray_ReadEvent; }
 	void SetClientServerQueueCS(CRITICAL_SECTION* ClientServerQueue_CS) { m_ClientServerQueue_CS = ClientServerQueue_CS; }
 	void SetServerClientArrayCS(CRITICAL_SECTION* ServerClientArray_CS) { m_ServerClientArray_CS = ServerClientArray_CS; }
-	void SetGameStartOrNot(bool* isGameStarted) { m_isGameStarted = isGameStarted; }
+	void SetGameStartOrNot(bool isGameStarted) { *m_isGameStarted = isGameStarted; }
 
 	SOCKET GetSocket() { return m_sock; }
 	std::array<Packet, 4>* GetClientInfoArray() { return m_ClientInfoArray; }

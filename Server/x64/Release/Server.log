@@ -1,7 +1,31 @@
-﻿  Server.cpp
-  코드를 생성하고 있습니다.
-  1 of 106 functions ( 0.9%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
-  코드를 생성했습니다.
-  Server.vcxproj -> C:\Users\원준\Desktop\NGP\Server\x64\Release\Server.exe
+﻿  ClientServerThread.cpp
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(21,56): error C2065: 'RecvThread': 선언되지 않은 식별자입니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(45,31): error C2039: 'GetClientInfoArrayEvent': 'ThreadArg'의 멤버가 아닙니다.
+C:\Users\원준\Desktop\NGP\Server\Common.h(49,7): message : 'ThreadArg' 선언을 참조하십시오.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(83,31): error C2039: 'GetClientInfoArrayEvent': 'ThreadArg'의 멤버가 아닙니다.
+C:\Users\원준\Desktop\NGP\Server\Common.h(49,7): message : 'ThreadArg' 선언을 참조하십시오.
+  InfoCheckThread.cpp
+  InGameThread.cpp
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(87,98): error C2662: 'bool Packet::GetSurvivingBit(void)': 'this' 포인터를 'const _T1'에서 'Packet &'(으)로 변환할 수 없습니다.
+          with
+          [
+              _T1=Packet
+          ]
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(87,92): message : 변환하면서 한정자가 손실됩니다.
+C:\Users\원준\Desktop\NGP\Server\Common.h(43,7): message : 'Packet::GetSurvivingBit' 선언을 참조하십시오.
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(87,98): message : 인수 목록 '()'을(를) 일치시키는 동안
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\algorithm(488,13): message : 컴파일되는 함수 템플릿 인스턴스화 'auto InGameThread::<lambda_1>::operator ()<_Ty>(const _T1 &) const'에 대한 참조를 확인하세요.
+          with
+          [
+              _Ty=Packet,
+              _T1=Packet
+          ]
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(87,13): message : 컴파일되는 함수 템플릿 인스턴스화 '__int64 std::count_if<std::_Array_iterator<_Ty,4>,InGameThread::<lambda_1>>(_InIt,_InIt,_Pr)'에 대한 참조를 확인하세요.
+          with
+          [
+              _Ty=Packet,
+              _InIt=std::_Array_iterator<Packet,4>,
+              _Pr=InGameThread::<lambda_1>
+          ]
+  Server.cpp
+C:\Users\원준\Desktop\NGP\Server\Server.cpp(98,35): error C2065: 'ClientServerThread': 선언되지 않은 식별자입니다.
