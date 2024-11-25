@@ -148,15 +148,14 @@ int playerHP = 100;
 
 DWORD WINAPI ReceiveDataThread(LPVOID arg) {
     HWND hDlg = reinterpret_cast<HWND>(arg);
-    Packet recvPacket;
     u_long mode = 1;
     ioctlsocket(sock, FIONBIO, &mode); // Set non-blocking mode
 
     while (gameReady) {
-        int bytesReceived = recv(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+        int bytesReceived = recv(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
         if (bytesReceived > 0) {
             // 게임 시작 비트를 확인하고 GUI 종료 및 스레드 종료
-            if (recvPacket.GetStartBit()) {
+            if (packetclient.GetStartBit()) {
                 EndDialog(hDlg, IDCANCEL); // GUI 대화 상자를 종료
                 ExitThread(0);             // 스레드 종료
             }
@@ -165,7 +164,7 @@ DWORD WINAPI ReceiveDataThread(LPVOID arg) {
             DisplayError("recv()");
             ExitThread(0); // 에러 시 스레드 종료
         }
-        Sleep(10); // Small delay to avoid high CPU usage
+        Sleep(100); // Small delay to avoid high CPU usage
     }
 
     return 0;
@@ -230,7 +229,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 sock = INVALID_SOCKET;
                 return TRUE;
             }
-
+            recv(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
             // Display connection success message and enable "Ready" button
             DisplayText("준비 완료되었습니다. 서버에 연결되었습니다. IP 주소: %s\n", buf);
             EnableWindow(hReadyButton, TRUE);
@@ -899,7 +898,6 @@ bool checkCollision(object_won& sphere, obss& wall) {
     float radius = sphere.x_scale;
     return (distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ) < (radius * radius);
 }
-
 
 
 GLvoid object_ok(int value) {
