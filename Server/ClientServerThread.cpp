@@ -1,14 +1,14 @@
 #include <iostream>
 #include <queue>
 #include "Common.h"
+#include "ClientServerThread.h"
 
 DWORD WINAPI RecvThread(LPVOID arg);
 
-void init(SOCKET* s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE* CIA_WriteEvent, HANDLE* CIA_ReadEvent, CRITICAL_SECTION* CSQ_CS, CRITICAL_SECTION* SCQ_CS) {
+void init(SOCKET s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE* CIA_WriteEvent, HANDLE* CIA_ReadEvent, CRITICAL_SECTION* CSQ_CS, CRITICAL_SECTION* SCQ_CS, LPVOID arg) {
     bool slotFound = false;
-    CRITICAL_SECTION sendCS;
     WaitForSingleObject(CIA_ReadEvent, INFINITE);
-    InitializeCriticalSection(&sendCS);
+
     for (int i = 0; i < 4; ++i) {
         if (!CIA->at(i).GetValidBit()) {
             slotFound = true;
@@ -21,18 +21,16 @@ void init(SOCKET* s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE
             response.SetPlayerNumber(i);
             //std::cout << response.GetValidBit() << std::endl;
 
-            EnterCriticalSection(&sendCS);
-            int retval = send(*s, (char*)&response, sizeof(response), 0);
+            int retval = send(s, (char*)&response, sizeof(response), 0);
             if (retval <= 0) {
                 err_display("send()");
                 break;
             }
-            LeaveCriticalSection(&sendCS);
 
-            HANDLE hRecvThread = CreateThread(NULL, 0, RecvThread, CIA, 0, NULL);
+            HANDLE hRecvThread = CreateThread(NULL, 0, RecvThread, arg, 0, NULL);
             if (hRecvThread == NULL) {
                 err_display("RecvThread 생성 실패");
-                closesocket(*s);
+                closesocket(s);
                 return;
             }
             CloseHandle(hRecvThread);
@@ -43,11 +41,9 @@ void init(SOCKET* s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE
     SetEvent(CIA_WriteEvent);
 
     if (!slotFound) {
-        EnterCriticalSection(&sendCS);
         Packet response;
         response.SetValidBit(false);
-        send(*s, (char*)&response, sizeof(response), 0);
-        LeaveCriticalSection(&sendCS);
+        send(s, (char*)&response, sizeof(response), 0);
     }
 }
 
@@ -61,28 +57,29 @@ DWORD WINAPI RecvThread(LPVOID arg) {
     HANDLE* CIA_ReadEvent = args->GetClientInfoArrayReadEvent();
     CRITICAL_SECTION* CSQ_CS = args->GetClientServerQueueCS();
     CRITICAL_SECTION* SCA_CS = args->GetServerClientArrayCS();
-    CRITICAL_SECTION recvCS;
-    InitializeCriticalSection(&recvCS);
-    while (true) {
 
-        EnterCriticalSection(&recvCS);
+    while (true) {
         Packet receivedPacket;
         int retval = recv(s, (char*)&receivedPacket, sizeof(receivedPacket), 0);
-        LeaveCriticalSection(&recvCS);
 
         if (retval <= 0) {
             std::cout << WSAGetLastError() << std::endl;
             err_display("recv()");
             break;
         }
-        //std::cout << "???";
+
+        std::cout << "패킷 수신" << std::endl;
+
         if (!*isGameStarted) {
-            WaitForSingleObject(CIA_ReadEvent, INFINITE);  // 시간 설정 필요
+            std::cout << "이벤트 대기 전" << std::endl;
+            WaitForSingleObject(*CIA_ReadEvent, INFINITE);  // 시간 설정 필요
+            std::cout << "이벤트 대기 후" << std::endl;
             int playerNumber = receivedPacket.GetPlayerNumber();
             if (playerNumber >= 0 && playerNumber < 4) {
                 CIA->at(playerNumber) = receivedPacket;
             }
-            SetEvent(CIA_WriteEvent);
+            SetEvent(*CIA_WriteEvent);
+            std::cout << "이벤트 세팅 완료" << std::endl;
         }
         else {
             EnterCriticalSection(CSQ_CS);
@@ -107,9 +104,9 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
     CRITICAL_SECTION* CSQ_CS = args->GetClientServerQueueCS();
     CRITICAL_SECTION* SCA_CS = args->GetServerClientArrayCS();
 
-    
 
-    init(&s, CIA, CSQ, CIA_WriteEvent, CIA_ReadEvent, CSQ_CS, SCA_CS);
+
+    init(s, CIA, CSQ, CIA_WriteEvent, CIA_ReadEvent, CSQ_CS, SCA_CS, arg);
 
     while (true) {
         if (*isGameStarted) {
@@ -137,7 +134,7 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
         }
     }
 
-    
+
 
     closesocket(s);
     delete args;
