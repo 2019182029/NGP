@@ -4,13 +4,11 @@
 
 DWORD WINAPI RecvThread(LPVOID arg);
 
-
-
 void init(SOCKET* s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE* CIA_WriteEvent, HANDLE* CIA_ReadEvent, CRITICAL_SECTION* CSQ_CS, CRITICAL_SECTION* SCQ_CS) {
     bool slotFound = false;
     CRITICAL_SECTION sendCS;
     WaitForSingleObject(CIA_ReadEvent, INFINITE);
-
+    InitializeCriticalSection(&sendCS);
     for (int i = 0; i < 4; ++i) {
         if (!CIA->at(i).GetValidBit()) {
             slotFound = true;
@@ -64,7 +62,7 @@ DWORD WINAPI RecvThread(LPVOID arg) {
     CRITICAL_SECTION* CSQ_CS = args->GetClientServerQueueCS();
     CRITICAL_SECTION* SCA_CS = args->GetServerClientArrayCS();
     CRITICAL_SECTION recvCS;
-
+    InitializeCriticalSection(&recvCS);
     while (true) {
 
         EnterCriticalSection(&recvCS);
