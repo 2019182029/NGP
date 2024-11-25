@@ -20,7 +20,7 @@
 #include <math.h>
 #include <vector>
 #include <string>
-
+#include <array>
 void make_shaderProgram();
 void make_vertexShaders();
 void make_fragmentShaders();
