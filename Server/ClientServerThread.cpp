@@ -7,10 +7,13 @@ DWORD WINAPI RecvThread(LPVOID arg);
 
 void init(SOCKET s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE* CIA_WriteEvent, HANDLE* CIA_ReadEvent, CRITICAL_SECTION* CSQ_CS, CRITICAL_SECTION* SCQ_CS, LPVOID arg) {
     bool slotFound = false;
+    int count = 0;
+    
     WaitForSingleObject(CIA_ReadEvent, INFINITE);
 
     for (int i = 0; i < 4; ++i) {
         if (!CIA->at(i).GetValidBit()) {
+           
             slotFound = true;
 
             CIA->at(i).SetValidBit(true);
@@ -86,6 +89,8 @@ DWORD WINAPI RecvThread(LPVOID arg) {
             CSQ->push(receivedPacket);
             LeaveCriticalSection(CSQ_CS);
         }
+
+            
     }
 
     closesocket(s);
@@ -104,33 +109,43 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
     CRITICAL_SECTION* CSQ_CS = args->GetClientServerQueueCS();
     CRITICAL_SECTION* SCA_CS = args->GetServerClientArrayCS();
 
-
-
+    Packet ret;
+    
     init(s, CIA, CSQ, CIA_WriteEvent, CIA_ReadEvent, CSQ_CS, SCA_CS, arg);
 
     while (true) {
         if (*isGameStarted) {
-            auto beforeTime = std::chrono::high_resolution_clock::now();
-            auto currentTime = std::chrono::high_resolution_clock::now();
-            auto elapsedTime = std::chrono::microseconds(0);
-            auto totalElapsedTime = std::chrono::microseconds(0);
 
-            int Timeout = 3;
+            ret.SetStartBit(true);
+            send(s, (char*)&ret, sizeof(ret), 0);
 
-            if (elapsedTime.count() > Timeout) {
-                EnterCriticalSection(SCA_CS);
-                for (const auto& packet : *SCA) {
-                    send(s, (char*)&packet, sizeof(packet), 0);
+            while (1) {
+                auto beforeTime = std::chrono::high_resolution_clock::now();
+                auto currentTime = std::chrono::high_resolution_clock::now();
+                auto elapsedTime = std::chrono::microseconds(0);
+                auto totalElapsedTime = std::chrono::microseconds(0);
+
+                int Timeout = 3;
+
+                if (elapsedTime.count() > Timeout) {
+
+
+                    EnterCriticalSection(SCA_CS);
+                    for (const auto& packet : *SCA) {
+                        send(s, (char*)&packet, sizeof(packet), 0);
+                    }
+                    LeaveCriticalSection(SCA_CS);
+
+
                 }
-                LeaveCriticalSection(SCA_CS);
+
+                currentTime = std::chrono::high_resolution_clock::now();
+                elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
+                totalElapsedTime += std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
+                beforeTime = std::chrono::high_resolution_clock::now();
+
+                Sleep(1000);
             }
-
-            currentTime = std::chrono::high_resolution_clock::now();
-            elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
-            totalElapsedTime += std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
-            beforeTime = std::chrono::high_resolution_clock::now();
-
-            Sleep(1000);
         }
     }
 
