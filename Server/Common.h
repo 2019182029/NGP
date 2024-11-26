@@ -70,7 +70,7 @@ public:
 	void SetClientInfoArrayReadEvent(HANDLE* ClientInfoArray_ReadEvent) { m_ClientInfoArray_ReadEvent = ClientInfoArray_ReadEvent; }
 	void SetClientServerQueueCS(CRITICAL_SECTION* ClientServerQueue_CS) { m_ClientServerQueue_CS = ClientServerQueue_CS; }
 	void SetServerClientArrayCS(CRITICAL_SECTION* ServerClientArray_CS) { m_ServerClientArray_CS = ServerClientArray_CS; }
-	void SetGameStartOrNot(bool isGameStarted) { *m_isGameStarted = isGameStarted; }
+	void SetGameStartOrNot(bool* isGameStarted) { m_isGameStarted = isGameStarted; }
 
 	SOCKET GetSocket() { return m_sock; }
 	std::array<Packet, 4>* GetClientInfoArray() { return m_ClientInfoArray; }
