@@ -1,7 +1,11 @@
 #include "Common.h"
 #include "InGameThread.h"
 
-void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerClientArray, std::array<Object, 4>* ClientInfo, CRITICAL_SECTION* ServerClientArray_CS, volatile bool* isGameStart) {
+std::default_random_engine dre(0);
+std::uniform_int_distribution<int> uid(-15, 15);
+std::uniform_int_distribution<int> uidZDir(1, 10);
+
+void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerClientArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, CRITICAL_SECTION* ServerClientArray_CS, volatile bool* isGameStart) {
 	EnterCriticalSection(ServerClientArray_CS);
 	
 	for (int i = 0; i < 4; ++i) {
@@ -44,6 +48,16 @@ void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerC
 
 	LeaveCriticalSection(ServerClientArray_CS);
 
+	// 장애물 초기화
+	for (auto& obstacle : *Obstacles) {
+		// 위치 
+		obstacle.SetPosition(uid(dre) / 10.0f, uid(dre) / 10.0f);
+		obstacle.SetZPosition(-45.0f);
+
+		// 방향
+		obstacle.SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, uidZDir(dre) / 10.0f);
+	}
+
 	*isGameStart = true;
 
 	std::cout << "게임 시작" << std::endl;
@@ -85,6 +99,7 @@ void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 			if ((*ClientInfo)[packet.GetPlayerNumber()].GetItemBit()) {  // 해당 플레이어가 아이템을 가지고 있다면
 				for (int i = 0; i < 4; ++i) {
 					if (!(*ClientInfo)[i].GetValidBit()) { continue; }
+					if (!(*ClientInfo)[i].GetSurvivingBit()) { continue; }
 
 					if (i != packet.GetPlayerNumber()) {  // 해당 플레이어를 제외한 나머지 모든 플레이어에게
 						(*ClientInfo)[i].SetAplliedBit(true);  // 아이템 효과 적용 후
@@ -105,6 +120,7 @@ void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 	for (auto& player : *ClientInfo) {
 		if (!player.GetValidBit()) { continue; }
+		if (!player.GetSurvivingBit()) { continue; }
 
 		switch (player.GetCurrentSurface()) {
 		case 0:  // 아랫면이 밑면일 때
@@ -164,14 +180,64 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime) {
 	for (auto& obstacle : *Obstacles) {
 		if (obstacle.GetXPosition() + obstacle.GetXDir() * elapsedTime < -2.0f || obstacle.GetXPosition() + obstacle.GetXDir() * elapsedTime > 2.0f) {  // 왼쪽, 오른쪽 벽에 닿았다면
-			obstacle.SetDir(-2.0f * obstacle.GetXDir(), 0.0f);  // yz 평면에 대해 반사
+			obstacle.SetDir(-2.0f * obstacle.GetXDir(), 0.0f, obstacle.GetZDir());  // yz 평면에 대해 반사
 		}
 
 		if (obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime < -2.0f || obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime > 2.0f) {  // 위쪽, 아래쪽 벽에 닿았다면
-			obstacle.SetDir(0.0f, -2.0f * obstacle.GetYDir());  // xz 평면에 대해 반사
+			obstacle.SetDir(0.0f, -2.0f * obstacle.GetYDir(), obstacle.GetZDir());  // xz 평면에 대해 반사
 		}
 
-		obstacle.SetPosition(obstacle.GetXPosition() + obstacle.GetXDir() * elapsedTime, obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime);  // 장애물 이동
+		// 장애물 이동
+		obstacle.SetPosition(obstacle.GetXPosition() + obstacle.GetXDir() * elapsedTime, obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime);  
+		obstacle.SetZPosition(obstacle.GetZPosition() + obstacle.GetZDir() * elapsedTime);
+
+		if (obstacle.GetZPosition() > 0.0f) {  // 플레이어를 지나갔다면
+			obstacle.SetZPosition(-45.0f + obstacle.GetZPosition());  // 재배치
+		}
+	}
+}
+
+void CheckCollision(std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles) {
+	for (auto& player : *ClientInfo) {
+		if (!player.GetValidBit()) { continue; }
+		if (!player.GetSurvivingBit()) { continue; }
+
+		// 현재 바닥에 따른 플레이어 위치 보정
+		float playerX, playerY;
+
+		switch (player.GetCurrentSurface()) {
+		case 0:  // 아랫면이 밑면일 때
+			playerX = player.GetXPosition();
+			playerY = player.GetYPosition() + 0.25f;
+			break;
+
+		case 1:  // 오른면이 밑면일 때
+			playerX = player.GetXPosition() - 0.25f;
+			playerY = player.GetYPosition();
+			break;
+
+		case 2:  // 윗면이 밑면일 때
+			playerX = player.GetXPosition();
+			playerY = player.GetYPosition() - 0.25f;
+			break;
+
+		case 3:  // 왼면이 밑면일 때
+			playerX = player.GetXPosition() + 0.25f;
+			playerY = player.GetYPosition();
+			break;
+
+		default:
+			break;
+		}
+
+		for (auto& obstacle : *Obstacles) {
+			// 플레이어와 장애물의 거리 계산을 통한 충돌 검사
+			if (sqrt((playerX - obstacle.GetXPosition()) * ((playerX - obstacle.GetXPosition()) + 
+				     (playerY - obstacle.GetYPosition()) * (playerY - obstacle.GetYPosition()) + 
+				     (-1.0f - obstacle.GetZPosition()) * (-1.0f - obstacle.GetZPosition())) < 0.5f)) {  // 플레이어와 장애물 간의 거리가 0.5f 미만이라면
+				player.SetSurvivingBit(0);
+			}
+		}
 	}
 }
 
@@ -200,7 +266,7 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 	double elapsedTime;
 	auto totalElapsedTime = std::chrono::microseconds(0);
 
-	Init(((ThreadArg*)arg)->GetClientInfoArray(), ((ThreadArg*)arg)->GetServerClientArray(), &Players, ((ThreadArg*)arg)->GetServerClientArrayCS(), ((ThreadArg*)arg)->GetGameStartOrNot());
+	Init(((ThreadArg*)arg)->GetClientInfoArray(), ((ThreadArg*)arg)->GetServerClientArray(), &Players, &Obstacles, ((ThreadArg*)arg)->GetServerClientArrayCS(), ((ThreadArg*)arg)->GetGameStartOrNot());
 
 	// 게임 루프
 	while (1) {
@@ -223,7 +289,7 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 		MoveObstacle(&Obstacles, elapsedTime);
 
 		// 충돌 검사
-
+		CheckCollision(&Players, &Obstacles);
 
 		// totalElapsedTime이 60분의 1초를 경과했을 시 ServerClientArray 갱신
 		if (totalElapsedTime.count() >= 16'667) {

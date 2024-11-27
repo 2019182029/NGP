@@ -13,6 +13,7 @@
 #include <queue>  // ClientServerQueue
 #include <chrono>
 #include <iostream>
+#include <random>
 
 #pragma comment(lib, "ws2_32") // ws2_32.lib ¸µÅ©
 
