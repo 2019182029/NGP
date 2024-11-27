@@ -1,31 +1,10 @@
 ﻿  ClientServerThread.cpp
-C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(21,56): error C2065: 'RecvThread': 선언되지 않은 식별자입니다.
-C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(45,31): error C2039: 'GetClientInfoArrayEvent': 'ThreadArg'의 멤버가 아닙니다.
-C:\Users\원준\Desktop\NGP\Server\Common.h(49,7): message : 'ThreadArg' 선언을 참조하십시오.
-C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(83,31): error C2039: 'GetClientInfoArrayEvent': 'ThreadArg'의 멤버가 아닙니다.
-C:\Users\원준\Desktop\NGP\Server\Common.h(49,7): message : 'ThreadArg' 선언을 참조하십시오.
-  InfoCheckThread.cpp
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(58,25): error C2440: '초기화 중': 'volatile bool *'에서 'bool *'(으)로 변환할 수 없습니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(58,25): message : 변환하면서 한정자가 손실됩니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(106,25): error C2440: '초기화 중': 'volatile bool *'에서 'bool *'(으)로 변환할 수 없습니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(106,25): message : 변환하면서 한정자가 손실됩니다.
   InGameThread.cpp
-C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(87,98): error C2662: 'bool Packet::GetSurvivingBit(void)': 'this' 포인터를 'const _T1'에서 'Packet &'(으)로 변환할 수 없습니다.
-          with
-          [
-              _T1=Packet
-          ]
-C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(87,92): message : 변환하면서 한정자가 손실됩니다.
-C:\Users\원준\Desktop\NGP\Server\Common.h(43,7): message : 'Packet::GetSurvivingBit' 선언을 참조하십시오.
-C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(87,98): message : 인수 목록 '()'을(를) 일치시키는 동안
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\algorithm(488,13): message : 컴파일되는 함수 템플릿 인스턴스화 'auto InGameThread::<lambda_1>::operator ()<_Ty>(const _T1 &) const'에 대한 참조를 확인하세요.
-          with
-          [
-              _Ty=Packet,
-              _T1=Packet
-          ]
-C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(87,13): message : 컴파일되는 함수 템플릿 인스턴스화 '__int64 std::count_if<std::_Array_iterator<_Ty,4>,InGameThread::<lambda_1>>(_InIt,_InIt,_Pr)'에 대한 참조를 확인하세요.
-          with
-          [
-              _Ty=Packet,
-              _InIt=std::_Array_iterator<Packet,4>,
-              _Pr=InGameThread::<lambda_1>
-          ]
-  Server.cpp
-C:\Users\원준\Desktop\NGP\Server\Server.cpp(98,35): error C2065: 'ClientServerThread': 선언되지 않은 식별자입니다.
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(60,2): error C2664: 'void Init(std::array<Packet,4> *,std::array<Packet,4> *,std::array<Packet,4> *,CRITICAL_SECTION *,bool *)': 인수 5을(를) 'volatile bool *'에서 'bool *'(으)로 변환할 수 없습니다.
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(60,185): message : 변환하면서 한정자가 손실됩니다.
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(4,6): message : 'Init' 선언을 참조하십시오.
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(60,2): message : 인수 목록 '(std::array<Packet,4> *, std::array<Packet,4> *, std::array<Packet,4> *, CRITICAL_SECTION *, volatile bool *)'을(를) 일치시키는 동안

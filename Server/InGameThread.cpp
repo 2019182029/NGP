@@ -8,7 +8,7 @@ void Init(std::array<Packet, 4>* ClientInfo, std::array<Packet, 4>* ClientInfoAr
 		// ServerClientArray 초기화
 		if ((*ClientInfoArray)[i].GetValidBit()) {
 			(*ClientInfo)[i].SetValidBit(1);  (*ServerClientArray)[i].SetValidBit(1);
-			(*ServerClientArray)[i].SetPlayerNumber(i);
+			(*ClientInfo)[i].SetPlayerNumber(i);  (*ServerClientArray)[i].SetPlayerNumber(i);
 			(*ClientInfo)[i].SetItemBit(0);  (*ServerClientArray)[i].SetItemBit(0);
 			(*ClientInfo)[i].SetAplliedBit(0);  (*ServerClientArray)[i].SetAplliedBit(0);
 			(*ClientInfo)[i].SetSurvivingBit(1);  (*ServerClientArray)[i].SetSurvivingBit(1);
@@ -62,9 +62,9 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 	// 게임 루프
 	while (1) {
 		// ClientServerQueue가 비어있지 않다면 ClientInfo 갱신
-		EnterCriticalSection(((ThreadArg*)arg)->GetClientServerQueueCS());
-
 		if (!((ThreadArg*)arg)->GetClientServerQueue()->empty()) {  
+			EnterCriticalSection(((ThreadArg*)arg)->GetClientServerQueueCS());
+
 			Packet p = ((ThreadArg*)arg)->GetClientServerQueue()->front();  // 큐의 첫 번째 요소 가져오기
 
 			if (p.GetKeyState() & 0001) {  // C 키가 눌린 거라면
@@ -79,15 +79,15 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 			ClientInfo[p.GetPlayerNumber()].SetKeyState(p.GetKeyState());  // ClientInfo 갱신
 
 			((ThreadArg*)arg)->GetClientServerQueue()->pop();  // 큐의 첫 번째 요소 삭제
+
+			LeaveCriticalSection(((ThreadArg*)arg)->GetClientServerQueueCS());
 		}
 
-		LeaveCriticalSection(((ThreadArg*)arg)->GetClientServerQueueCS());
-
 		// 모든 플레이어가 사망했다면 프로그램 종료
-		/*if (!std::count_if(ClientInfo.begin(), ClientInfo.end(), [](const auto& packet) { return packet.GetSurvivingBit() == 0; })) {  
+		if (!std::count_if(ClientInfo.begin(), ClientInfo.end(), [](auto& packet) { return packet.GetSurvivingBit() == 0; })) {  
 			((ThreadArg*)arg)->SetGameStartOrNot(false);
 			break;
-		}*/
+		}
 
 		currentTime = std::chrono::high_resolution_clock::now();
 		elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
@@ -102,6 +102,21 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 		// totalElapsedTime이 60분의 1초를 경과했을 시 ServerClientArray 갱신
 		if (elapsedTime.count() >= 16'667) { 
+			std::array<Packet, 4>* ServerClientArray = ((ThreadArg*)arg)->GetServerClientArray();
+
+			EnterCriticalSection(((ThreadArg*)arg)->GetServerClientArrayCS());
+				
+			for (int i = 0; i < 4; ++i) {
+				if (ClientInfo[i].GetValidBit()) {
+					(*ServerClientArray)[i].SetItemBit(ClientInfo[i].GetItemBit());
+					(*ServerClientArray)[i].SetAplliedBit(ClientInfo[i].GetAppliedBit());
+					(*ServerClientArray)[i].SetSurvivingBit(ClientInfo[i].GetSurvivingBit());
+					(*ServerClientArray)[i].SetPosition(ClientInfo[i].GetXPosition(), ClientInfo[i].GetYPosition());
+					(*ServerClientArray)[i].SetCurrentSurface(ClientInfo[i].GetCurrentSurface());
+				}
+			}
+
+			LeaveCriticalSection(((ThreadArg*)arg)->GetServerClientArrayCS());
 
 			totalElapsedTime = std::chrono::microseconds(0);  // totalElapsedTime를 0초로 갱신
 		}
