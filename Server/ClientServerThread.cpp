@@ -114,6 +114,7 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
     init(s, CIA, CSQ, CIA_WriteEvent, CIA_ReadEvent, CSQ_CS, SCA_CS, arg);
 
     while (true) {
+        std::cout << std::flush;
         if (*isGameStarted) {
 
             ret.SetStartBit(true);
