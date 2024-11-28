@@ -14,6 +14,7 @@
 #include <chrono>
 #include <iostream>
 #include <random>
+#include <thread>
 
 #pragma comment(lib, "ws2_32") // ws2_32.lib ¸µÅ©
 
@@ -32,7 +33,7 @@ public:
 	void SetAplliedBit(bool applied) { state[0] = applied ? (state[0] | 0b00000010) : (state[0] & 0b11111101); }
 	void SetSurvivingBit(bool surviving) { state[0] = surviving ? (state[0] | 0b00000001) : (state[0] & 0b11111110); }
 	void SetCurrentSurface(int surface) { state[1] = ((state[1] & 0b00111111) | (surface << 6)); }
-	void SetKeyState(int keyState) { state[1] = ((state[1] & 0b11000011) | (keyState << 4)); }
+	void SetKeyState(int keyState) { state[1] = ((state[1] & 0b11000011) | (keyState << 2)); }
 	void SetSeed(int seed) { state[1] = ((state[1] & 0b11111100) | seed); }
 
 	float GetXPosition() { return x; }

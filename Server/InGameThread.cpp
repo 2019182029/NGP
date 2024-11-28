@@ -77,7 +77,7 @@ void PopFromClientServerQueue(std::queue<Packet>* ClientServerQueue, std::array<
 void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 	switch (packet.GetKeyState() ^ (*ClientInfo)[packet.GetPlayerNumber()].GetKeyState()) {  // 어떤 키가 눌리거나 떼어졌는가?
 	case 0b0100:  // A 키
-		if (packet.GetKeyState() & 0100) {  // A 키가 눌렸다면
+		if (packet.GetKeyState() & 0b0100) {  // A 키가 눌렸다면
 			(*ClientInfo)[packet.GetPlayerNumber()].SetDir(-1.0f, 0.0f); 
 		}
 		else {  // A 키가 떼어졌다면
@@ -86,7 +86,7 @@ void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 		break;
 
 	case 0b0010:  // D 키
-		if (packet.GetKeyState() & 0010) {  // D 키가 눌렸다면
+		if (packet.GetKeyState() & 0b0010) {  // D 키가 눌렸다면
 			(*ClientInfo)[packet.GetPlayerNumber()].SetDir(1.0f, 0.0f); 
 		}
 		else {  // D 키가 떼어졌다면
@@ -95,7 +95,7 @@ void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 		break;
 
 	case 0b0001:  // C 키
-		if (packet.GetKeyState() & 0001) {  // C 키가 눌렸다면
+		if (packet.GetKeyState() & 0b0001) {  // C 키가 눌렸다면
 			if ((*ClientInfo)[packet.GetPlayerNumber()].GetItemBit()) {  // 해당 플레이어가 아이템을 가지고 있다면
 				for (int i = 0; i < 4; ++i) {
 					if (!(*ClientInfo)[i].GetValidBit()) { continue; }
@@ -124,20 +124,20 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 
 		switch (player.GetCurrentSurface()) {
 		case 0:  // 아랫면이 밑면일 때
-			player.SetPosition(player.GetXPosition() + player.GetXDir() * elapsedTime, player.GetYPosition());
+			player.SetPosition(player.GetXPosition() + player.GetXDir() * (float)elapsedTime, player.GetYPosition());
 			if (player.GetXPosition() < -2.0f + 0.25f) {  // 왼쪽 벽에 닿았다면
 				player.SetPosition(-2.0f, 0.25f);
 				player.SetCurrentSurface(3);
 			}
-			else if (player.GetXPosition() > 2.0f) {  // 오른쪽 벽에 닿았다면
+			else if (player.GetXPosition() > 2.0f - 0.25f) {  // 오른쪽 벽에 닿았다면
 				player.SetPosition(2.0f, 0.25f);
 				player.SetCurrentSurface(1);
 			}
 			break;
 
 		case 1:  // 오른면이 밑면일 때
-			player.SetPosition(player.GetXPosition(), player.GetYPosition() + player.GetXDir() * elapsedTime);
-			if (player.GetYPosition() < 0.25f) {  // 아래쪽 벽에 닿았다면
+			player.SetPosition(player.GetXPosition(), player.GetYPosition() + player.GetXDir() * (float)elapsedTime);
+			if (player.GetYPosition() < 0.0f + 0.25f) {  // 아래쪽 벽에 닿았다면
 				player.SetPosition(2.0f - 0.25f, 0.0f);
 				player.SetCurrentSurface(0);
 			}
@@ -148,20 +148,20 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 			break;
 
 		case 2:  // 윗면이 밑면일 때
-			player.SetPosition(player.GetXPosition() - player.GetXDir() * elapsedTime, player.GetYPosition());
+			player.SetPosition(player.GetXPosition() - player.GetXDir() * (float)elapsedTime, player.GetYPosition());
 			if (player.GetXPosition() < -2.0f + 0.25f) {  // 왼쪽 벽에 닿았다면
 				player.SetPosition(-2.0f, 4.0f - 0.25f);
 				player.SetCurrentSurface(3);
 			}
-			else if (player.GetXPosition() > 2.0f) {  // 오른쪽 벽에 닿았다면
+			else if (player.GetXPosition() > 2.0f - 0.25f) {  // 오른쪽 벽에 닿았다면
 				player.SetPosition(2.0f, 4.0f - 0.25f);
 				player.SetCurrentSurface(1);
 			}
 			break;
 
 		case 3:  // 왼면이 밑면일 때
-			player.SetPosition(player.GetXPosition(), player.GetYPosition() - player.GetXDir() * elapsedTime);
-			if (player.GetYPosition() < 0.25f) {  // 아래쪽 벽에 닿았다면
+			player.SetPosition(player.GetXPosition(), player.GetYPosition() - player.GetXDir() * (float)elapsedTime);
+			if (player.GetYPosition() < 0.0f + 0.25f) {  // 아래쪽 벽에 닿았다면
 				player.SetPosition(-2.0f + 0.25f, 0.0f);
 				player.SetCurrentSurface(0);
 			}
@@ -188,8 +188,8 @@ void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime) {
 		}
 
 		// 장애물 이동
-		obstacle.SetPosition(obstacle.GetXPosition() + obstacle.GetXDir() * elapsedTime, obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime);  
-		obstacle.SetZPosition(obstacle.GetZPosition() + obstacle.GetZDir() * elapsedTime);
+		obstacle.SetPosition(obstacle.GetXPosition() + obstacle.GetXDir() * (float)elapsedTime, obstacle.GetYPosition() + obstacle.GetYDir() * (float)elapsedTime);
+		obstacle.SetZPosition(obstacle.GetZPosition() + obstacle.GetZDir() * (float)elapsedTime);
 
 		if (obstacle.GetZPosition() > 0.0f) {  // 플레이어를 지나갔다면
 			obstacle.SetZPosition(-45.0f + obstacle.GetZPosition());  // 재배치
@@ -232,9 +232,9 @@ void CheckCollision(std::array<Object, 4>* ClientInfo, std::array<Object, 10>* O
 
 		for (auto& obstacle : *Obstacles) {
 			// 플레이어와 장애물의 거리 계산을 통한 충돌 검사
-			if (sqrt((playerX - obstacle.GetXPosition()) * ((playerX - obstacle.GetXPosition()) + 
+			if (sqrt((playerX - obstacle.GetXPosition()) * (playerX - obstacle.GetXPosition()) + 
 				     (playerY - obstacle.GetYPosition()) * (playerY - obstacle.GetYPosition()) + 
-				     (-1.0f - obstacle.GetZPosition()) * (-1.0f - obstacle.GetZPosition())) < 0.5f)) {  // 플레이어와 장애물 간의 거리가 0.5f 미만이라면
+				     (-1.0f - obstacle.GetZPosition()) * (-1.0f - obstacle.GetZPosition())) < 0.5f) {  // 플레이어와 장애물 간의 거리가 0.5f 미만이라면
 				player.SetSurvivingBit(0);
 			}
 		}
@@ -297,6 +297,8 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 			totalElapsedTime = std::chrono::microseconds(0);  // totalElapsedTime를 0초로 갱신
 		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1)); // CPU 사용량 감소
 	}
 
 	return 0;

@@ -56,7 +56,7 @@ DWORD WINAPI RecvThread(LPVOID arg) {
     SOCKET s = args->GetSocket();
     auto* CIA = args->GetClientInfoArray();
     auto* CSQ = args->GetClientServerQueue();
-    bool* isGameStarted = args->GetGameStartOrNot();
+    volatile bool* isGameStarted = args->GetGameStartOrNot();
     HANDLE* CIA_WriteEvent = args->GetClientInfoArrayWriteEvent();
     HANDLE* CIA_ReadEvent = args->GetClientInfoArrayReadEvent();
     CRITICAL_SECTION* CSQ_CS = args->GetClientServerQueueCS();
@@ -72,26 +72,19 @@ DWORD WINAPI RecvThread(LPVOID arg) {
             break;
         }
 
-        std::cout << "패킷 수신" << std::endl;
-
         if (!*isGameStarted) {
-            std::cout << "이벤트 대기 전" << std::endl;
             WaitForSingleObject(*CIA_ReadEvent, INFINITE);  // 시간 설정 필요
-            std::cout << "이벤트 대기 후" << std::endl;
             int playerNumber = receivedPacket.GetPlayerNumber();
             if (playerNumber >= 0 && playerNumber < 4) {
                 CIA->at(playerNumber) = receivedPacket;
             }
             SetEvent(*CIA_WriteEvent);
-            std::cout << "이벤트 세팅 완료" << std::endl;
         }
         else {
             EnterCriticalSection(CSQ_CS);
             CSQ->push(receivedPacket);
             LeaveCriticalSection(CSQ_CS);
         }
-
-
     }
 
     closesocket(s);
@@ -104,7 +97,7 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
     auto* CIA = args->GetClientInfoArray();
     auto* CSQ = args->GetClientServerQueue();
     auto* SCA = args->GetServerClientArray();
-    bool* isGameStarted = args->GetGameStartOrNot();
+    volatile bool* isGameStarted = args->GetGameStartOrNot();
     HANDLE* CIA_WriteEvent = args->GetClientInfoArrayWriteEvent();
     HANDLE* CIA_ReadEvent = args->GetClientInfoArrayReadEvent();
     CRITICAL_SECTION* CSQ_CS = args->GetClientServerQueueCS();
@@ -115,45 +108,35 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
     init(s, CIA, CSQ, CIA_WriteEvent, CIA_ReadEvent, CSQ_CS, SCA_CS, arg);
 
     while (true) {
-        //std::cout << std::endl;  // Why??
-
         if (*isGameStarted) {
-            std::cout << "ClientServerThread : 게임 시작" << std::endl;
-
             ret.SetStartBit(true);
             send(s, (char*)&ret, sizeof(ret), 0);
 
+            auto beforeTime = std::chrono::high_resolution_clock::now();
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            double elapsedTime = 0.0;
+
+            double Timeout = 1.0 / 30.0;
+
             while (1) {
-                auto beforeTime = std::chrono::high_resolution_clock::now();
-                auto currentTime = std::chrono::high_resolution_clock::now();
-                auto elapsedTime = std::chrono::microseconds(0);
-                auto totalElapsedTime = std::chrono::microseconds(0);
-
-                int Timeout = 3;
-
-                if (elapsedTime.count() > Timeout) {
-
-
+                if (elapsedTime > Timeout) {
                     EnterCriticalSection(SCA_CS);
                     for (const auto& packet : *SCA) {
                         send(s, (char*)&packet, sizeof(packet), 0);
                     }
                     LeaveCriticalSection(SCA_CS);
 
-
+                    elapsedTime = 0.0;
                 }
 
                 currentTime = std::chrono::high_resolution_clock::now();
-                elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
-                totalElapsedTime += std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
+                elapsedTime += ((std::chrono::duration<double>)std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime)).count();
                 beforeTime = std::chrono::high_resolution_clock::now();
 
-                Sleep(1000);
+                std::this_thread::sleep_for(std::chrono::milliseconds(1)); // CPU 사용량 감소
             }
         }
     }
-
-
 
     closesocket(s);
     delete args;
