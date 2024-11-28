@@ -13,6 +13,7 @@
 #include <queue>  // ClientServerQueue
 #include <chrono>
 #include <iostream>
+#include <random>
 
 #pragma comment(lib, "ws2_32") // ws2_32.lib 링크
 
@@ -34,6 +35,8 @@ public:
 	void SetKeyState(int keyState) { state[1] = ((state[1] & 0b11000011) | (keyState << 4)); }
 	void SetSeed(int seed) { state[1] = ((state[1] & 0b11111100) | seed); }
 
+	float GetXPosition() { return x; }
+	float GetYPosition() { return y; }
 	bool GetReadyBit() { return (state[0] & 0b10000000) >> 7; }
 	bool GetStartBit() { return (state[0] & 0b01000000) >> 6; }
 	bool GetValidBit() { return (state[0] & 0b00100000) >> 5; }
@@ -59,7 +62,7 @@ private:
 	CRITICAL_SECTION* m_ClientServerQueue_CS;
 	CRITICAL_SECTION* m_ServerClientArray_CS;
 
-	bool* m_isGameStarted;
+	volatile bool* m_isGameStarted;
 
 public:
 	void SetSocket(SOCKET sock) { m_sock = sock; }
@@ -70,7 +73,7 @@ public:
 	void SetClientInfoArrayReadEvent(HANDLE* ClientInfoArray_ReadEvent) { m_ClientInfoArray_ReadEvent = ClientInfoArray_ReadEvent; }
 	void SetClientServerQueueCS(CRITICAL_SECTION* ClientServerQueue_CS) { m_ClientServerQueue_CS = ClientServerQueue_CS; }
 	void SetServerClientArrayCS(CRITICAL_SECTION* ServerClientArray_CS) { m_ServerClientArray_CS = ServerClientArray_CS; }
-	void SetGameStartOrNot(bool* isGameStarted) { m_isGameStarted = isGameStarted; }
+	void SetGameStartOrNot(volatile bool* isGameStarted) { m_isGameStarted = isGameStarted; }
 
 	SOCKET GetSocket() { return m_sock; }
 	std::array<Packet, 4>* GetClientInfoArray() { return m_ClientInfoArray; }
@@ -80,7 +83,7 @@ public:
 	HANDLE* GetClientInfoArrayReadEvent() { return m_ClientInfoArray_ReadEvent; }
 	CRITICAL_SECTION* GetClientServerQueueCS() { return m_ClientServerQueue_CS; }
 	CRITICAL_SECTION* GetServerClientArrayCS() { return m_ServerClientArray_CS; }
-	bool* GetGameStartOrNot() { return m_isGameStarted; }
+	volatile bool* GetGameStartOrNot() { return m_isGameStarted; }
 };
 
 // 소켓 함수 오류 출력 후 종료

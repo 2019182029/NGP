@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "InfoCheckThread.h"
+#include "ClientServerThread.h"
 
 #define SERVERPORT 9000
 
@@ -15,7 +16,7 @@ CRITICAL_SECTION ClientServerQueue_CS;
 CRITICAL_SECTION ServerClientArray_CS;
 
 // 게임 시작 여부
-bool isGameStart = false;
+volatile bool isGameStart = false;
 
 int main(int argc, char* argv[]) {
 	// 데이터 통신에 사용할 변수
