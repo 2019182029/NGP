@@ -1,5 +1,5 @@
 #include <Windows.h> // For BYTE definition
-#include "Packet.h"
+#include "packet.h"
 
 Packet::Packet() : x(0), y(0) {
     state[0] = 0;

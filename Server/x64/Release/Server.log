@@ -1,7 +1,10 @@
-﻿  Server.cpp
-  코드를 생성하고 있습니다.
-  1 of 106 functions ( 0.9%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
-  코드를 생성했습니다.
-  Server.vcxproj -> C:\Users\원준\Desktop\NGP\Server\x64\Release\Server.exe
+﻿  ClientServerThread.cpp
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(58,25): error C2440: '초기화 중': 'volatile bool *'에서 'bool *'(으)로 변환할 수 없습니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(58,25): message : 변환하면서 한정자가 손실됩니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(106,25): error C2440: '초기화 중': 'volatile bool *'에서 'bool *'(으)로 변환할 수 없습니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(106,25): message : 변환하면서 한정자가 손실됩니다.
+  InGameThread.cpp
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(60,2): error C2664: 'void Init(std::array<Packet,4> *,std::array<Packet,4> *,std::array<Packet,4> *,CRITICAL_SECTION *,bool *)': 인수 5을(를) 'volatile bool *'에서 'bool *'(으)로 변환할 수 없습니다.
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(60,185): message : 변환하면서 한정자가 손실됩니다.
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(4,6): message : 'Init' 선언을 참조하십시오.
+C:\Users\원준\Desktop\NGP\Server\InGameThread.cpp(60,2): message : 인수 목록 '(std::array<Packet,4> *, std::array<Packet,4> *, std::array<Packet,4> *, CRITICAL_SECTION *, volatile bool *)'을(를) 일치시키는 동안
