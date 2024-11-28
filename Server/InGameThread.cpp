@@ -179,11 +179,11 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 
 void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime) {
 	for (auto& obstacle : *Obstacles) {
-		if (obstacle.GetXPosition() + obstacle.GetXDir() * elapsedTime < -2.0f || obstacle.GetXPosition() + obstacle.GetXDir() * elapsedTime > 2.0f) {  // 왼쪽, 오른쪽 벽에 닿았다면
+		if (obstacle.GetXPosition() + obstacle.GetXDir() * elapsedTime < -2.0f + 0.25f || obstacle.GetXPosition() + obstacle.GetXDir() * elapsedTime > 2.0f - 0.25f) {  // 왼쪽, 오른쪽 벽에 닿았다면
 			obstacle.SetDir(-2.0f * obstacle.GetXDir(), 0.0f, obstacle.GetZDir());  // yz 평면에 대해 반사
 		}
 
-		if (obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime < -2.0f || obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime > 2.0f) {  // 위쪽, 아래쪽 벽에 닿았다면
+		if (obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime < -2.0f + 0.25f || obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime > 2.0f - 0.25f) {  // 위쪽, 아래쪽 벽에 닿았다면
 			obstacle.SetDir(0.0f, -2.0f * obstacle.GetYDir(), obstacle.GetZDir());  // xz 평면에 대해 반사
 		}
 
