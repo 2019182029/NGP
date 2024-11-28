@@ -8,12 +8,12 @@ DWORD WINAPI RecvThread(LPVOID arg);
 void init(SOCKET s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE* CIA_WriteEvent, HANDLE* CIA_ReadEvent, CRITICAL_SECTION* CSQ_CS, CRITICAL_SECTION* SCQ_CS, LPVOID arg) {
     bool slotFound = false;
     int count = 0;
-    
+
     WaitForSingleObject(CIA_ReadEvent, INFINITE);
 
     for (int i = 0; i < 4; ++i) {
         if (!CIA->at(i).GetValidBit()) {
-           
+
             slotFound = true;
 
             CIA->at(i).SetValidBit(true);
@@ -44,6 +44,7 @@ void init(SOCKET s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE*
     SetEvent(CIA_WriteEvent);
 
     if (!slotFound) {
+        std::cout << "자리 꽉 참" << std::endl;
         Packet response;
         response.SetValidBit(false);
         send(s, (char*)&response, sizeof(response), 0);
@@ -90,7 +91,7 @@ DWORD WINAPI RecvThread(LPVOID arg) {
             LeaveCriticalSection(CSQ_CS);
         }
 
-            
+
     }
 
     closesocket(s);
@@ -110,11 +111,14 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
     CRITICAL_SECTION* SCA_CS = args->GetServerClientArrayCS();
 
     Packet ret;
-    
+
     init(s, CIA, CSQ, CIA_WriteEvent, CIA_ReadEvent, CSQ_CS, SCA_CS, arg);
 
     while (true) {
+        //std::cout << std::endl;  // Why??
+
         if (*isGameStarted) {
+            std::cout << "ClientServerThread : 게임 시작" << std::endl;
 
             ret.SetStartBit(true);
             send(s, (char*)&ret, sizeof(ret), 0);
