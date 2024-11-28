@@ -157,7 +157,7 @@ DWORD WINAPI ReceiveDataThread(LPVOID arg) {
             // 게임 시작 비트를 확인하고 GUI 종료 및 스레드 종료
             if (packetclient.GetStartBit()) {
                 EndDialog(hDlg, IDCANCEL); // GUI 대화 상자를 종료
-                ExitThread(0);             // 스레드 종료
+                ExitThread(0);             // 스레드 종료5
             }
         }
         else if (bytesReceived == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
@@ -230,10 +230,23 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 return TRUE;
             }
             recv(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
-            // Display connection success message and enable "Ready" button
-            DisplayText("준비 완료되었습니다. 서버에 연결되었습니다. IP 주소: %s\n", buf);
-            EnableWindow(hReadyButton, TRUE);
-            EnableWindow(hConnectButton, FALSE);  // Disable "Connect" button after successful connection
+            if (!packetclient.GetValidBit())
+            {
+                DisplayText("자리가 모두 차있습니다. 다른 서버에 연결해주세요\n", buf);
+                Packet a;
+                packetclient = a;
+                closesocket(sock);
+                EnableWindow(hCancelButton, FALSE);
+                EnableWindow(hReadyButton, FALSE);
+                EnableWindow(hConnectButton, TRUE);
+
+            }
+            else {
+                // Display connection success message and enable "Ready" button
+                DisplayText("준비 완료되었습니다. 서버에 연결되었습니다. IP 주소: %s\n", buf);
+                EnableWindow(hReadyButton, TRUE);
+                EnableWindow(hConnectButton, FALSE);  // Disable "Connect" button after successful connection
+            }
             return TRUE;
         }
 
@@ -335,6 +348,8 @@ int main(int argc, char** argv)
 
     CloseHandle(hThread);
 
+    packetclient.SetPlayerNumber(1);
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowPosition(100, 100);
@@ -352,6 +367,7 @@ int main(int argc, char** argv)
     glutTimerFunc(1000, next_stage, 1);
     glutTimerFunc(60, update, 1);
 
+
     for (int i = 0; i < 4; ++i) {
         gameCharacters[i].init(cubePosVbo2, cubeNomalVbo2);  // Initialize with the appropriate VBOs
         gameCharacters[i].Object = CubeObject;  // Set the Object for each gameCharacter
@@ -360,21 +376,25 @@ int main(int argc, char** argv)
         case 0:  // 0번 플레이어
             gamePacket[i].SetPosition(0.0f, 0.0f);
             gamePacket[i].SetCurrentSurface(0);  // 아랫면
+            gamePacket[i].SetPlayerNumber(0);
             break;
 
         case 1:  // 1번 플레이어
             gamePacket[i].SetPosition(2.0f, 2.0f);
             gamePacket[i].SetCurrentSurface(1);  // 아랫면
+            gamePacket[i].SetPlayerNumber(1);
             break;
 
         case 2:  // 2번 플레이어
             gamePacket[i].SetPosition(0.0f, 4.0f);
             gamePacket[i].SetCurrentSurface(2);  // 아랫면
+            gamePacket[i].SetPlayerNumber(2);
             break;
 
         case 3:  // 3번 플레이어
             gamePacket[i].SetPosition(-2.0f, 2.0f);
             gamePacket[i].SetCurrentSurface(3);  // 아랫면
+            gamePacket[i].SetPlayerNumber(3);
             break;
 
         default:
@@ -523,9 +543,9 @@ void drawScene()
 
         // 색상 설정
         glUniform4f(objColorLocation, gameCharacters[i].r, gameCharacters[i].g, gameCharacters[i].b, 1.0f);
-        if (i == TESTNUM)
+        if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
         {
-            glUniform4f(objColorLocation, 0.0f, gameCharacters[i].g, gameCharacters[i].b, 1.0f);
+            glUniform4f(objColorLocation, 0.1f, 0.5f, 0.1f, 1.0f);
         }
         // 모델 행렬을 셰이더에 전달
         glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
@@ -732,6 +752,11 @@ char* filetobuf(const char* file)
 }
 
 GLvoid update(int value) {
+    
+    for (int i = 0; i < 4; ++i)
+    {
+        //recv(sock, reinterpret_cast<char*>(&gamePacket[i]), sizeof(gamePacket[i]), 0);
+    }
     for (int i = 0; i < objects.size(); ++i)
     {
         objects[i].move();
@@ -744,7 +769,7 @@ GLvoid update(int value) {
         case 0:
             gameCharacters[i].y = gamePacket[i].getY() + gameCharacters[i].y_scale ;
             gameCharacters[i].x = gamePacket[i].getX();
-            if (i == TESTNUM)
+            if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
             {
                 light.cameraRotation = 0;
                 light.camera_x = 0.0f;
@@ -754,7 +779,7 @@ GLvoid update(int value) {
         case 1:
             gameCharacters[i].x = gamePacket[i].getX() - gameCharacters[i].x_scale;
             gameCharacters[i].y = gamePacket[i].getY();
-            if (i == TESTNUM)
+            if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
             {
                 light.cameraRotation = 270.0f;
                 light.camera_x = 2.0f;
@@ -764,7 +789,7 @@ GLvoid update(int value) {
         case 2:
             gameCharacters[i].y = gamePacket[i].getY() - gameCharacters[i].y_scale;
             gameCharacters[i].x = gamePacket[i].getX();
-            if (i == TESTNUM)
+            if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
             {
                 light.cameraRotation = 180.0f;
                 light.camera_x = 0.0f;
@@ -774,7 +799,7 @@ GLvoid update(int value) {
         case 3:
             gameCharacters[i].x = gamePacket[i].getX() + gameCharacters[i].x_scale;
             gameCharacters[i].y = gamePacket[i].getY();
-            if (i == TESTNUM)
+            if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
             {
                 light.cameraRotation = 90.0f;
                 light.camera_x = -2.0f;
@@ -812,6 +837,8 @@ void updateKeyState(char key, bool isPressed) {
     std::cout << "A: " << packetclient.getKeyState('a') << ", ";
     std::cout << "D: " << packetclient.getKeyState('d') << ", ";
     std::cout << "C: " << packetclient.getKeyState('c') << "\n";
+    send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
+
 }
 
 // 키 입력 이벤트 처리
