@@ -1,29 +1,29 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\",
+  "WorkspaceRootPath": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\ClientServerThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|solutionrelative:ClientServerThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\InfoCheckThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|solutionrelative:InfoCheckThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\InGameThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Server\\InGameThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|solutionrelative:InGameThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\Server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|solutionrelative:Server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\Common.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Server\\Common.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|solutionrelative:Common.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\InfoCheckThread.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Server\\ClientServerThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|solutionrelative:ClientServerThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Server\\InfoCheckThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|solutionrelative:InfoCheckThread.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Server\\Server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|solutionrelative:Server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|C:\\Users\\jkkks\\Desktop\\NGP\\Server\\InfoCheckThread.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{E5912DAA-BA53-43FF-A27C-597A5F43B12D}|Server.vcxproj|solutionrelative:InfoCheckThread.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -34,7 +34,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -42,11 +42,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "InfoCheckThread.cpp",
-              "DocumentMoniker": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\InfoCheckThread.cpp",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\InfoCheckThread.cpp",
               "RelativeDocumentMoniker": "InfoCheckThread.cpp",
-              "ToolTip": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\InfoCheckThread.cpp",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\InfoCheckThread.cpp",
               "RelativeToolTip": "InfoCheckThread.cpp",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAwAAAAsAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
@@ -54,23 +54,24 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "InGameThread.cpp",
-              "DocumentMoniker": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\InGameThread.cpp",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\InGameThread.cpp",
               "RelativeDocumentMoniker": "InGameThread.cpp",
-              "ToolTip": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\InGameThread.cpp",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\InGameThread.cpp",
               "RelativeToolTip": "InGameThread.cpp",
-              "ViewState": "AQIAAFQAAAAAAAAAAAAAAGcAAAAjAAAA",
+              "ViewState": "AQIAAKgAAAAAAAAAAAAAAL0AAAALAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2024-11-21T17:55:43.45Z"
+              "WhenOpened": "2024-11-21T17:55:43.45Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "ClientServerThread.cpp",
-              "DocumentMoniker": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\ClientServerThread.cpp",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\ClientServerThread.cpp",
               "RelativeDocumentMoniker": "ClientServerThread.cpp",
-              "ToolTip": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\ClientServerThread.cpp",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\ClientServerThread.cpp",
               "RelativeToolTip": "ClientServerThread.cpp",
               "ViewState": "AQIAAGYAAAAAAAAAAAAAAHYAAAAiAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
@@ -79,11 +80,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "Server.cpp",
-              "DocumentMoniker": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\Server.cpp",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\Server.cpp",
               "RelativeDocumentMoniker": "Server.cpp",
-              "ToolTip": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\Server.cpp",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\Server.cpp",
               "RelativeToolTip": "Server.cpp",
               "ViewState": "AQIAAAYAAAAAAAAAAAAAAB0AAAAaAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
@@ -91,23 +92,24 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "Common.h",
-              "DocumentMoniker": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\Common.h",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\Common.h",
               "RelativeDocumentMoniker": "Common.h",
-              "ToolTip": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\Common.h",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\Common.h",
               "RelativeToolTip": "Common.h",
-              "ViewState": "AQIAABIAAAAAAAAAAAAAACQAAAAIAAAA",
+              "ViewState": "AQIAACQAAAAAAAAAAAAAADEAAAAwAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-11-15T02:05:32.666Z"
+              "WhenOpened": "2024-11-15T02:05:32.666Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
               "Title": "InfoCheckThread.h",
-              "DocumentMoniker": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\InfoCheckThread.h",
+              "DocumentMoniker": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\InfoCheckThread.h",
               "RelativeDocumentMoniker": "InfoCheckThread.h",
-              "ToolTip": "C:\\Users\\jjoji\\Desktop\\GIT\\NGP\\Server\\InfoCheckThread.h",
+              "ToolTip": "C:\\Users\\jkkks\\Desktop\\NGP\\Server\\InfoCheckThread.h",
               "RelativeToolTip": "InfoCheckThread.h",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",

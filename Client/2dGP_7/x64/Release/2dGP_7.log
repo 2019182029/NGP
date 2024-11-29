@@ -1,11 +1,21 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: 중간 디렉터리(x64\Release\)에 다른 프로젝트(2dGP_7-MyAsusLaptop.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
+  class.cpp
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\class.cpp(56,23): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\class.cpp(57,23): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\class.cpp(58,27): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\class.cpp(60,38): warning C4244: '=': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\class.cpp(88,29): warning C4244: '+=': 'double'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\class.cpp(89,29): warning C4244: '+=': 'double'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\class.cpp(90,29): warning C4244: '+=': 'double'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   main.cpp
-C:\Users\원준\Desktop\NGP\Client\2dGP_7\main.cpp(629,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\원준\Desktop\NGP\Client\2dGP_7\main.cpp(630,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\원준\Desktop\NGP\Client\2dGP_7\main.cpp(916,23): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\main.cpp(631,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\main.cpp(632,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\main.cpp(918,23): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  obj.cpp
+C:\Users\jkkks\Desktop\NGP\Client\2dGP_7\obj.cpp(110,26): warning C4267: 'return': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  packet.cpp
   코드를 생성하고 있습니다.
-  2 of 655 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    6 functions had inline decision re-evaluated but remain unchanged
+  Previous IPDB was built with incompatible compiler, fall back to full compilation.
+  All 605 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   코드를 생성했습니다.
-  2dGP_7.vcxproj -> C:\Users\원준\Desktop\NGP\Client\x64\Release\2dGP_7.exe
+  2dGP_7.vcxproj -> C:\Users\jkkks\Desktop\NGP\Client\x64\Release\2dGP_7.exe

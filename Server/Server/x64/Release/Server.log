@@ -1,9 +1,8 @@
-﻿  ClientServerThread.cpp
-  InfoCheckThread.cpp
-  InGameThread.cpp
-  Server.cpp
+﻿  InGameThread.cpp
+C:\Users\jkkks\Desktop\NGP\Server\InGameThread.cpp(58,62): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   코드를 생성하고 있습니다.
-  Previous IPDB not found, fall back to full compilation.
-  All 76 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  3 of 285 functions ( 1.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
   Server.vcxproj -> C:\Users\jkkks\Desktop\NGP\Server\x64\Release\Server.exe

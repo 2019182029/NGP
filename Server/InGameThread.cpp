@@ -55,7 +55,7 @@ void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerC
 		obstacle.SetZPosition(-100.0f);
 
 		// 방향
-		obstacle.SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, uidZDir(dre) / 10.0f);
+		obstacle.SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, uidZDir(dre));
 	}
 
 	*isGameStart = true;
@@ -183,7 +183,7 @@ void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime) {
 			obstacle.SetDir(-2.0f * obstacle.GetXDir(), 0.0f, obstacle.GetZDir());  // yz 평면에 대해 반사
 		}
 
-		if (obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime < -2.0f + 0.25f || obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime > 2.0f - 0.25f) {  // 위쪽, 아래쪽 벽에 닿았다면
+		if (obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime < 0.0f + 0.25f || obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime > 4.0f - 0.25f) {  // 위쪽, 아래쪽 벽에 닿았다면
 			obstacle.SetDir(0.0f, -2.0f * obstacle.GetYDir(), obstacle.GetZDir());  // xz 평면에 대해 반사
 		}
 

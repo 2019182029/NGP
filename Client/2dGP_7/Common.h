@@ -53,3 +53,15 @@ void err_display(int errcode)
 	printf("[¿À·ù] %s\n", (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
 }
+
+class Vertex {
+private:
+	float x, y, z;
+
+public:
+	void SetPosition(float fx, float fy, float fz) { x = fx; y = fy; z = fz; }
+
+	float GetXPosition() { return x; }
+	float GetYPosition() { return y; }
+	float GetZPosition() { return z; }
+};

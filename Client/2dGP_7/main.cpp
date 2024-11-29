@@ -44,6 +44,8 @@ Packet packetclient;
 
 std::array<Packet, 4> gamePacket;
 
+std::array<Vertex, 10> objectPacket;
+
 GLchar* vertexSource, * fragmentSource;
 GLuint vertexShader, fragmentShader;
 GLuint shaderProgramID;
@@ -87,7 +89,10 @@ std::array<obss, 4> gameCharacters = {
     obss(cubePosVbo2, cubeNomalVbo2)   // 4th element
 };
 
+
 std::vector<object> objects;
+
+GLvoid object_test();
 
 objRead RockReader;
 GLint RockObject = RockReader.loadObj_normalize_center("rock.obj");
@@ -360,6 +365,7 @@ int main(int argc, char** argv)
     CloseHandle(hThread);
 
     //packetclient.SetPlayerNumber(1);
+    object_test();
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -375,7 +381,7 @@ int main(int argc, char** argv)
     make_shaderProgram();
     InitBuffer();
     glutWarpPointer(800 / 2, 800 / 2);
-    glutTimerFunc(1000, next_stage, 1);
+    //glutTimerFunc(1000, next_stage, 1);
     glutTimerFunc(60, update, 1);
 
 
@@ -773,14 +779,13 @@ GLvoid update(int value) {
         recv(sock, reinterpret_cast<char*>(&gamePacket[i]), sizeof(gamePacket[i]), 0);
     }*/
     recv(sock, (char*)&gamePacket, sizeof(gamePacket), 0);
-    for (int i = 0; i < objects.size(); ++i)
+    recv(sock, (char*)&objectPacket, sizeof(objectPacket), 0);
+    
+    for (int i = 0; i <10; ++i)
     {
-        objects[i].move(elapsedTime);
-
-        if (i == 0)
-        {
-            std::cout << objects[i].x << " 와 " << objects[i].y << std::endl;
-        }
+        objects[i].x = objectPacket[i].GetXPosition();
+        objects[i].y = objectPacket[i].GetYPosition();
+        objects[i].z = objectPacket[i].GetZPosition();
     }
 
     for (int i = 0; i < 4; ++i)
@@ -1011,3 +1016,15 @@ GLvoid next_stage(int value) {
     }
 }
 
+
+GLvoid object_test() {
+
+    for (int i = 0; i < 10; ++i)
+    {
+        object new_object;
+        new_object.init(teapotPosVbo, teapotNomalVbo); // 객체 초기화
+        new_object.object_num = teapotObject;
+
+        objects.push_back(new_object);
+    }
+}
