@@ -37,21 +37,21 @@ public:
     void init(int PosVbo, int NomalVbo);
 };
 
-class object_won {
+class object {
 public:
     GLfloat x{}, y{ 0.25f }, z{ -100.0f };
     GLfloat x_scale{ 0.25f }, y_scale{ 0.25f }, z_scale{ 0.25f };
-    GLfloat x_move{}, y_move{};
+    GLfloat x_move{}, y_move{}, z_move{};
     GLfloat r{}, g{}, b{}, a{ 1.0 };
     GLuint vvbo{}, nvbo{};
     GLfloat rotate{};
     GLint object_num{};
     int rotate_move{};
 
-    object_won(); // 持失切 識情
+    object(); // 持失切 識情
 
     void init(int PosVbo, int NomalVbo);
-    void move();
+    void move(double elapsedTime);
 };
 //------------------------------------------------------------------------------------------------
 class light_set {

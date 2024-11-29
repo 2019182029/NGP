@@ -63,6 +63,11 @@ GLuint hpNomalVbo;
 GLuint teapotPosVbo;
 GLuint teapotNomalVbo;
 
+auto beforeTime = std::chrono::high_resolution_clock::now();
+auto currentTime = std::chrono::high_resolution_clock::now();
+double elapsedTime;
+auto totalElapsedTime = std::chrono::microseconds(0);
+
 std::unordered_map<char, bool> keyStates = {
     {'w', false},
     {'a', false},
@@ -82,7 +87,7 @@ std::array<obss, 4> gameCharacters = {
     obss(cubePosVbo2, cubeNomalVbo2)   // 4th element
 };
 
-std::vector<object_won> objects;
+std::vector<object> objects;
 
 objRead RockReader;
 GLint RockObject = RockReader.loadObj_normalize_center("rock.obj");
@@ -137,7 +142,7 @@ void renderBitmapString(float x, float y, void* font, const char* string) {
     }
 }
 
-bool checkCollision(object_won& , obss& );
+bool checkCollision(object&, obss&);
 
 int move_check{};
 int jump_check = 3;
@@ -150,12 +155,18 @@ DWORD WINAPI ReceiveDataThread(LPVOID arg) {
     HWND hDlg = reinterpret_cast<HWND>(arg);
     u_long mode = 1;
     ioctlsocket(sock, FIONBIO, &mode); // Set non-blocking mode
-
+    Packet test;
     while (gameReady) {
-        int bytesReceived = recv(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
+        int bytesReceived = recv(sock, reinterpret_cast<char*>(&test), sizeof(test), 0);
+
         if (bytesReceived > 0) {
             // 게임 시작 비트를 확인하고 GUI 종료 및 스레드 종료
-            if (packetclient.GetStartBit()) {
+            std::cout << "플레이어 번호 :" << packetclient.GetPlayerNumber() << std::endl;
+
+            if (test.GetStartBit()) {
+                packetclient.SetStartBit(test.GetStartBit());
+                //mode = 0;
+                //ioctlsocket(sock, FIONBIO, &mode); // Set blocking mode
                 EndDialog(hDlg, IDCANCEL); // GUI 대화 상자를 종료
                 ExitThread(0);             // 스레드 종료5
             }
@@ -250,7 +261,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             return TRUE;
         }
 
-        // Ready 상태일 때 수신 스레드를 생성
+                       // Ready 상태일 때 수신 스레드를 생성
         case ID_READY:
             packetclient.SetReadyBit(true);
             send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
@@ -348,7 +359,7 @@ int main(int argc, char** argv)
 
     CloseHandle(hThread);
 
-    packetclient.SetPlayerNumber(1);
+    //packetclient.SetPlayerNumber(1);
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -440,7 +451,7 @@ void drawScene()
 
     unsigned int ambiont = glGetUniformLocation(shaderProgramID, "amb");
 
-    glUniform3f(ambiont, 0.0,0.0,0.0);
+    glUniform3f(ambiont, 0.0, 0.0, 0.0);
 
     int objColorLocation = glGetUniformLocation(shaderProgramID, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
 
@@ -515,7 +526,7 @@ void drawScene()
         }
         modelMatrix = glm::translate(modelMatrix, glm::vec3(wall.x, wall.y, wall.z)); // 이동
         modelMatrix = glm::scale(modelMatrix, glm::vec3(wall.x_scale, wall.y_scale, wall.z_scale));
-        glUniform4f(objColorLocation, wall.r, wall.g, wall.b,wall.a);
+        glUniform4f(objColorLocation, wall.r, wall.g, wall.b, wall.a);
 
         glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 
@@ -564,7 +575,7 @@ void drawScene()
     }
 
     //장애물들 그리는 반복문
-    for (int i = 0; i < objects.size(); i++){
+    for (int i = 0; i < objects.size(); i++) {
         // 모델 행렬 초기화
         glm::mat4 modelMatrix(1.0f);
         // 모델 행렬을 셰이더에 전달
@@ -592,7 +603,7 @@ void drawScene()
         }
         glDrawArrays(GL_TRIANGLES, 0, objects[i].object_num);
 
-        if (sever_level >2 ) {
+        if (sever_level > 2) {
             glDisable(GL_BLEND);
         }
     }
@@ -650,7 +661,7 @@ void InitBuffer()
 
     glGenBuffers(1, &cubePosVbo2);
     glBindBuffer(GL_ARRAY_BUFFER, cubePosVbo2);
-    glBufferData(GL_ARRAY_BUFFER,CubeReader.outvertex.size() * sizeof(glm::vec3), &CubeReader.outvertex[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, CubeReader.outvertex.size() * sizeof(glm::vec3), &CubeReader.outvertex[0], GL_STATIC_DRAW);
 
     glGenBuffers(1, &cubeNomalVbo2);
     glBindBuffer(GL_ARRAY_BUFFER, cubeNomalVbo2);
@@ -752,14 +763,28 @@ char* filetobuf(const char* file)
 }
 
 GLvoid update(int value) {
-    
+
+    currentTime = std::chrono::high_resolution_clock::now();
+    elapsedTime = ((std::chrono::duration<double>)std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime)).count();
+    totalElapsedTime += std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
+    beforeTime = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 4; ++i)
     {
         //recv(sock, reinterpret_cast<char*>(&gamePacket[i]), sizeof(gamePacket[i]), 0);
+        if (i == 0) {
+            //std::cout << "받음" << std::endl;
+            //std::cout << "플레이어 " << gamePacket[i].GetPlayerNumber() << "번 x : " << gamePacket[i].GetXPosition() << ", y : " << gamePacket[i].GetYPosition() << std::endl;
+            //std::cout << "플레이어 " << gamePacket[i].GetPlayerNumber() << "번 x : " << gamePacket[i].GetXPosition() << ", y : " << gamePacket[i].GetYPosition() << ", 분면 : " << gamePacket[i].GetCurrentSurface() << std::endl;
+        }
     }
     for (int i = 0; i < objects.size(); ++i)
     {
-        objects[i].move();
+        objects[i].move(elapsedTime);
+
+        if (i == 0)
+        {
+            std::cout << objects[i].x << " 와 " << objects[i].y << std::endl;
+        }
     }
 
     for (int i = 0; i < 4; ++i)
@@ -767,55 +792,64 @@ GLvoid update(int value) {
         switch (gamePacket[i].GetCurrentSurface())
         {
         case 0:
-            gameCharacters[i].y = gamePacket[i].getY() + gameCharacters[i].y_scale ;
+            gameCharacters[i].y = gamePacket[i].getY() + gameCharacters[i].y_scale;
             gameCharacters[i].x = gamePacket[i].getX();
-            if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
+            if (i == packetclient.GetPlayerNumber())
             {
                 light.cameraRotation = 0;
                 light.camera_x = 0.0f;
                 light.camera_y = 2.0f;
+                light.light_y = 8.0f;
             }
             break;
         case 1:
             gameCharacters[i].x = gamePacket[i].getX() - gameCharacters[i].x_scale;
             gameCharacters[i].y = gamePacket[i].getY();
-            if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
+            if (i == packetclient.GetPlayerNumber())
             {
                 light.cameraRotation = 270.0f;
                 light.camera_x = 2.0f;
                 light.camera_y = 0;
+                light.light_y = 8.0f;
             }
             break;
         case 2:
             gameCharacters[i].y = gamePacket[i].getY() - gameCharacters[i].y_scale;
             gameCharacters[i].x = gamePacket[i].getX();
-            if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
+            if (i == packetclient.GetPlayerNumber())
             {
                 light.cameraRotation = 180.0f;
                 light.camera_x = 0.0f;
                 light.camera_y = -2.0f;
+                light.light_y = -4.0f;
             }
             break;
         case 3:
             gameCharacters[i].x = gamePacket[i].getX() + gameCharacters[i].x_scale;
             gameCharacters[i].y = gamePacket[i].getY();
-            if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
+            if (i == packetclient.GetPlayerNumber())
             {
                 light.cameraRotation = 90.0f;
                 light.camera_x = -2.0f;
                 light.camera_y = 0.0f;
+                light.light_y = 8.0f;
             }
             break;
         default:
             break;
         }
-        std::cout << light.cameraRotation << std::endl;
+        //std::cout << light.cameraRotation << std::endl;
     }
+
+    if (totalElapsedTime.count() >= 16'667) {
+        totalElapsedTime = std::chrono::microseconds(0);  // totalElapsedTime를 0초로 갱신
+    }
+
     InitBuffer();
     glutPostRedisplay();
 
     if (game_check) {
-        glutTimerFunc(30, update, 1);
+        glutTimerFunc(10, update, 1);    
     }
 }
 
@@ -837,6 +871,9 @@ void updateKeyState(char key, bool isPressed) {
     std::cout << "A: " << packetclient.getKeyState('a') << ", ";
     std::cout << "D: " << packetclient.getKeyState('d') << ", ";
     std::cout << "C: " << packetclient.getKeyState('c') << "\n";
+
+    std::cout << "플레이어 번호 : " << packetclient.GetPlayerNumber() << "Valid Bit : " << packetclient.GetValidBit() << std::endl;
+
     send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
 
 }
@@ -851,66 +888,14 @@ void keyUp(unsigned char key, int x, int y) {
 }
 
 GLvoid MousePoint(int button, int state, int x, int y) {
-    if (button == GLUT_LEFT_BUTTON) {
-        if (state == GLUT_UP) {
-           left_button = false;
-            glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
-
-        }
-        else {
-           left_button = true;
-            glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
-        }
-    }
 }
 
 GLvoid Motion(int x, int y) {
-    {
-        if (left_button) {
-            glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
-            GLfloat mouseX2 = static_cast<GLfloat>(x) - (glutGet(GLUT_WINDOW_WIDTH) / 2.0f);
-
-            // 윈도우 중심(400)에서 마우스 위치의 거리 계산
-            GLfloat distanceFromCenter = mouseX2; // 윈도우 중심을 기준으로 거리 계산
-            GLfloat rotationChange = distanceFromCenter * 0.005f; // 필요에 따라 감도 조절
-
-            
-            if (light.cameraRotation == 0)
-            {
-                light.light_y = 8.0f;
-            }
-            else if (light.cameraRotation == 270)
-            {
-                light.light_y = 8.0f;
-
-            }
-            else if (light.cameraRotation == 180)
-            {
-                light.light_y = -4.0f;
-            }
-            else if (light.cameraRotation == 90)
-            {
-                light.light_y = 8.0f;
-            }
-
-
-            if(sever_level > 3)
-            {
-                if (gameCharacters[1].x + gameCharacters[1].x_scale > 2.0f || gameCharacters[1].x - gameCharacters[1].x_scale < -2.0f)
-                {
-                    gameCharacters[1].x -= rotationChange;
-                }
-            }
-        }
-        
-        
-        InitBuffer();
-        glutPostRedisplay();
-    }
+    
 }
 
 
-bool checkCollision(object_won& sphere, obss& wall) {
+bool checkCollision(object& sphere, obss& wall) {
     // AABB - 원 충돌
     float closestX = std::max(wall.x - wall.x_scale, std::min(sphere.x, wall.x + wall.x_scale));
     float closestY = std::max(wall.y - wall.y_scale, std::min(sphere.y, wall.y + wall.y_scale));
@@ -930,7 +915,7 @@ bool checkCollision(object_won& sphere, obss& wall) {
 GLvoid object_ok(int value) {
 
     if (objects.size() < 10) {
-        object_won new_object;
+        object new_object;
         if (sever_level > 1) {
             int model = random_model(engine2);
             if (model == 1) {
@@ -942,7 +927,7 @@ GLvoid object_ok(int value) {
                 new_object.init(cubePosVbo2, cubeNomalVbo2); // 객체 초기화
                 new_object.object_num = CubeObject;
             }
-            else if( model == 3)
+            else if (model == 3)
             {
                 new_object.init(hpPosVbo, hpNomalVbo); // 객체 초기화
                 new_object.object_num = sphereObject;
@@ -964,12 +949,13 @@ GLvoid object_ok(int value) {
         {
             new_object.a = 1.0f;
         }
+
         objects.push_back(new_object);
 
         InitBuffer();
         glutPostRedisplay();
 
-        if (sever_level >0) {
+        if (sever_level > 0) {
             glutTimerFunc(480, object_ok, 1);
         }
     }
@@ -978,7 +964,6 @@ GLvoid object_ok(int value) {
 
 GLvoid next_stage(int value) {
     if (game_check) {
-
 
         std::cout << sever_level << std::endl;
         if (sever_level < 5) {
@@ -990,7 +975,6 @@ GLvoid next_stage(int value) {
             wall.g = 0.1f;
             wall.b = 0.1f;
             objects.clear();
-            glutTimerFunc(900, object_ok, 1);
         }
         else if (sever_level == 2) {
 
@@ -998,7 +982,6 @@ GLvoid next_stage(int value) {
             wall.g = 0.5f;
             wall.b = 0.1f;
             objects.clear();
-            glutTimerFunc(900, object_ok, 1);
         }
         else if (sever_level == 3) {
 
@@ -1006,7 +989,6 @@ GLvoid next_stage(int value) {
             wall.g = 0.1f;
             wall.b = 1.0f;
             objects.clear();
-            glutTimerFunc(900, object_ok, 1);
         }
         else if (sever_level == 4) {
 
@@ -1024,9 +1006,9 @@ GLvoid next_stage(int value) {
             gameCharacters[1].y = 0.25f;
             gameCharacters[1].z = -1.0f;
             objects.clear();
-            glutTimerFunc(900, object_ok, 1);
         }
 
+        glutTimerFunc(900, object_ok, 1);
         glutTimerFunc(30000, next_stage, 1);
         InitBuffer();
         glutPostRedisplay();
