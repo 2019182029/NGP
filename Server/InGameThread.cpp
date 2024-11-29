@@ -1,48 +1,54 @@
+// Todo
+// 
+// 장애물 초기 위치 및 속도 : Init()
+// 플레이어 점프, 플레이어 간의 충돌 검사 : MovePlayer()
+// 아이템
+
 #include "Common.h"
 #include "InGameThread.h"
 
 std::default_random_engine dre(0);
 std::uniform_int_distribution<int> uid(-15, 15);
-std::uniform_int_distribution<int> uidZDir(1, 10);
+std::uniform_int_distribution<int> uidZDir(10, 15);
 
 void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerClientArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, CRITICAL_SECTION* ServerClientArray_CS, volatile bool* isGameStart) {
 	EnterCriticalSection(ServerClientArray_CS);
 	
 	for (int i = 0; i < 4; ++i) {
 		// ServerClientArray 초기화
-		if ((*ClientInfoArray)[i].GetValidBit()) {
-			(*ClientInfo)[i].SetValidBit(1);  (*ServerClientArray)[i].SetValidBit(1);
-			(*ClientInfo)[i].SetPlayerNumber(i);  (*ServerClientArray)[i].SetPlayerNumber(i);
-			(*ClientInfo)[i].SetItemBit(0);  (*ServerClientArray)[i].SetItemBit(0);
-			(*ClientInfo)[i].SetAplliedBit(0);  (*ServerClientArray)[i].SetAplliedBit(0);
-			(*ClientInfo)[i].SetSurvivingBit(1);  (*ServerClientArray)[i].SetSurvivingBit(1);
-			(*ClientInfo)[i].SetKeyState(0b0000); 
-			(*ServerClientArray)[i].SetSeed(0);
+		if (!(*ClientInfoArray)[i].GetValidBit()) { continue; }
 
-			switch (i) {
-			case 0:  // 0번 플레이어
-				(*ClientInfo)[i].SetPosition(0.0f, 0.0f);  (*ServerClientArray)[i].SetPosition(0.0f, 0.0f);
-				(*ClientInfo)[i].SetCurrentSurface(0);  (*ServerClientArray)[i].SetCurrentSurface(0);  // 아랫면
-				break;
+		(*ClientInfo)[i].SetValidBit(1);  (*ServerClientArray)[i].SetValidBit(1);
+		(*ClientInfo)[i].SetPlayerNumber(i);  (*ServerClientArray)[i].SetPlayerNumber(i);
+		(*ClientInfo)[i].SetItemBit(0);  (*ServerClientArray)[i].SetItemBit(0);
+		(*ClientInfo)[i].SetAplliedBit(0);  (*ServerClientArray)[i].SetAplliedBit(0);
+		(*ClientInfo)[i].SetSurvivingBit(1);  (*ServerClientArray)[i].SetSurvivingBit(1);
+		(*ClientInfo)[i].SetKeyState(0b0000); 
+		(*ServerClientArray)[i].SetSeed(0);
 
-			case 1:  // 1번 플레이어
-				(*ClientInfo)[i].SetPosition(2.0f, 2.0f);  (*ServerClientArray)[i].SetPosition(2.0f, 2.0f);
-				(*ClientInfo)[i].SetCurrentSurface(1);  (*ServerClientArray)[i].SetCurrentSurface(1);  // 오른면
-				break;
+		switch (i) {
+		case 0:  // 0번 플레이어
+			(*ClientInfo)[i].SetPosition(0.0f, 0.0f);  (*ServerClientArray)[i].SetPosition(0.0f, 0.0f);
+			(*ClientInfo)[i].SetCurrentSurface(0);  (*ServerClientArray)[i].SetCurrentSurface(0);  // 아랫면
+			break;
 
-			case 2:  // 2번 플레이어
-				(*ClientInfo)[i].SetPosition(0.0f, 4.0f);  (*ServerClientArray)[i].SetPosition(0.0f, 4.0f);
-				(*ClientInfo)[i].SetCurrentSurface(2);  (*ServerClientArray)[i].SetCurrentSurface(2);  // 윗면
-				break;
+		case 1:  // 1번 플레이어
+			(*ClientInfo)[i].SetPosition(2.0f, 2.0f);  (*ServerClientArray)[i].SetPosition(2.0f, 2.0f);
+			(*ClientInfo)[i].SetCurrentSurface(1);  (*ServerClientArray)[i].SetCurrentSurface(1);  // 오른면
+			break;
 
-			case 3:  // 3번 플레이어
-				(*ClientInfo)[i].SetPosition(-2.0f, 2.0f);  (*ServerClientArray)[i].SetPosition(-2.0f, 2.0f);
-				(*ClientInfo)[i].SetCurrentSurface(3);  (*ServerClientArray)[i].SetCurrentSurface(3);  // 아랫면
-				break;
+		case 2:  // 2번 플레이어
+			(*ClientInfo)[i].SetPosition(0.0f, 4.0f);  (*ServerClientArray)[i].SetPosition(0.0f, 4.0f);
+			(*ClientInfo)[i].SetCurrentSurface(2);  (*ServerClientArray)[i].SetCurrentSurface(2);  // 윗면
+			break;
 
-			default:
-				break;
-			}
+		case 3:  // 3번 플레이어
+			(*ClientInfo)[i].SetPosition(-2.0f, 2.0f);  (*ServerClientArray)[i].SetPosition(-2.0f, 2.0f);
+			(*ClientInfo)[i].SetCurrentSurface(3);  (*ServerClientArray)[i].SetCurrentSurface(3);  // 아랫면
+			break;
+
+		default:
+			break;
 		}
 	}
 
@@ -52,10 +58,10 @@ void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerC
 	for (auto& obstacle : *Obstacles) {
 		// 위치 
 		obstacle.SetPosition(uid(dre) / 10.0f, uid(dre) / 10.0f);
-		obstacle.SetZPosition(-45.0f);
+		obstacle.SetZPosition(-100.0f);
 
 		// 방향
-		obstacle.SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, uidZDir(dre) / 10.0f);
+		obstacle.SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, uidZDir(dre));
 	}
 
 	*isGameStart = true;
@@ -183,7 +189,7 @@ void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime) {
 			obstacle.SetDir(-2.0f * obstacle.GetXDir(), 0.0f, obstacle.GetZDir());  // yz 평면에 대해 반사
 		}
 
-		if (obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime < -2.0f + 0.25f || obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime > 2.0f - 0.25f) {  // 위쪽, 아래쪽 벽에 닿았다면
+		if (obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime < 0.0f + 0.25f || obstacle.GetYPosition() + obstacle.GetYDir() * elapsedTime > 4.0f - 0.25f) {  // 위쪽, 아래쪽 벽에 닿았다면
 			obstacle.SetDir(0.0f, -2.0f * obstacle.GetYDir(), obstacle.GetZDir());  // xz 평면에 대해 반사
 		}
 
@@ -192,7 +198,7 @@ void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime) {
 		obstacle.SetZPosition(obstacle.GetZPosition() + obstacle.GetZDir() * (float)elapsedTime);
 
 		if (obstacle.GetZPosition() > 0.0f) {  // 플레이어를 지나갔다면
-			obstacle.SetZPosition(-45.0f + obstacle.GetZPosition());  // 재배치
+			obstacle.SetZPosition(-100.0f + obstacle.GetZPosition());  // 재배치
 		}
 	}
 }
@@ -241,9 +247,10 @@ void CheckCollision(std::array<Object, 4>* ClientInfo, std::array<Object, 10>* O
 	}
 }
 
-void RenewalServerClientArray(std::array<Packet, 4>* ServerClientArray, std::array<Object, 4>* ClientInfo, CRITICAL_SECTION* ServerClientArray_CS) {
+void RenewalServerClientArray(std::array<Packet, 4>* ServerClientArray, std::array<Vertex, 10>* ObstacleArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, CRITICAL_SECTION* ServerClientArray_CS) {
 	EnterCriticalSection(ServerClientArray_CS);
 
+	// 플레이어 갱신
 	for (int i = 0; i < 4; ++i) {
 		if ((*ClientInfo)[i].GetValidBit()) {
 			(*ServerClientArray)[i].SetItemBit((*ClientInfo)[i].GetItemBit());
@@ -252,6 +259,11 @@ void RenewalServerClientArray(std::array<Packet, 4>* ServerClientArray, std::arr
 			(*ServerClientArray)[i].SetPosition((*ClientInfo)[i].GetXPosition(), (*ClientInfo)[i].GetYPosition());
 			(*ServerClientArray)[i].SetCurrentSurface((*ClientInfo)[i].GetCurrentSurface());
 		}
+	}
+
+	// 장애물 갱신
+	for (int i = 0; i < 10; ++i) {
+		(*ObstacleArray)[i].SetPosition((*Obstacles)[i].GetXPosition(), (*Obstacles)[i].GetYPosition(), (*Obstacles)[i].GetZPosition());
 	}
 
 	LeaveCriticalSection(ServerClientArray_CS);
@@ -293,7 +305,7 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 		// totalElapsedTime이 60분의 1초를 경과했을 시 ServerClientArray 갱신
 		if (totalElapsedTime.count() >= 16'667) {
-			RenewalServerClientArray(((ThreadArg*)arg)->GetServerClientArray(), &Players, ((ThreadArg*)arg)->GetServerClientArrayCS());
+			RenewalServerClientArray(((ThreadArg*)arg)->GetServerClientArray(), ((ThreadArg*)arg)->GetObstacleArray(), &Players, &Obstacles, ((ThreadArg*)arg)->GetServerClientArrayCS());
 
 			totalElapsedTime = std::chrono::microseconds(0);  // totalElapsedTime를 0초로 갱신
 		}

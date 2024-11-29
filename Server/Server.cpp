@@ -8,6 +8,7 @@
 std::array<Packet, 4> ClientInfoArray;
 std::queue<Packet> ClientServerQueue;
 std::array<Packet, 4> ServerClientArray;
+std::array<Vertex, 10> ObstacleArray;
 
 // µ¿±âÈ­ °´Ã¼
 HANDLE ClientInfoArray_WriteEvent;
@@ -58,6 +59,7 @@ int main(int argc, char* argv[]) {
 	InfoCheckThreadArg.SetClientInfoArray(&ClientInfoArray);
 	InfoCheckThreadArg.SetClientServerQueue(&ClientServerQueue);
 	InfoCheckThreadArg.SetServerClientArray(&ServerClientArray);
+	InfoCheckThreadArg.SetObstacleArray(&ObstacleArray);
 	InfoCheckThreadArg.SetClientInfoArrayWriteEvent(&ClientInfoArray_WriteEvent);
 	InfoCheckThreadArg.SetClientInfoArrayReadEvent(&ClientInfoArray_ReadEvent);
 	InfoCheckThreadArg.SetClientServerQueueCS(&ClientServerQueue_CS);
@@ -89,6 +91,7 @@ int main(int argc, char* argv[]) {
 		ClientServerThreadArg->SetClientInfoArray(&ClientInfoArray);
 		ClientServerThreadArg->SetClientServerQueue(&ClientServerQueue);
 		ClientServerThreadArg->SetServerClientArray(&ServerClientArray);
+		ClientServerThreadArg->SetObstacleArray(&ObstacleArray);
 		ClientServerThreadArg->SetClientInfoArrayWriteEvent(&ClientInfoArray_WriteEvent);
 		ClientServerThreadArg->SetClientInfoArrayReadEvent(&ClientInfoArray_ReadEvent);
 		ClientServerThreadArg->SetClientServerQueueCS(&ClientServerQueue_CS);
