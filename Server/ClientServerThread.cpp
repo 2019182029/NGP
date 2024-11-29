@@ -1,3 +1,5 @@
+// 플레이어 정보를 한 번에 보냄
+
 #include <iostream>
 #include <queue>
 #include "Common.h"
@@ -116,14 +118,12 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
             auto currentTime = std::chrono::high_resolution_clock::now();
             double elapsedTime = 0.0;
 
-            double Timeout = 1.0 / 30.0;
+            double Timeout = 1.0 / 60.0;
 
             while (1) {
                 if (elapsedTime > Timeout) {
                     EnterCriticalSection(SCA_CS);
-                    for (const auto& packet : *SCA) {
-                        send(s, (char*)&packet, sizeof(packet), 0);
-                    }
+                    send(s, (char*)SCA, sizeof(*SCA), 0);
                     LeaveCriticalSection(SCA_CS);
 
                     elapsedTime = 0.0;

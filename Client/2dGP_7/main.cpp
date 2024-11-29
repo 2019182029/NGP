@@ -165,8 +165,8 @@ DWORD WINAPI ReceiveDataThread(LPVOID arg) {
 
             if (test.GetStartBit()) {
                 packetclient.SetStartBit(test.GetStartBit());
-                //mode = 0;
-                //ioctlsocket(sock, FIONBIO, &mode); // Set blocking mode
+                mode = 0;
+                ioctlsocket(sock, FIONBIO, &mode); // Set blocking mode
                 EndDialog(hDlg, IDCANCEL); // GUI 대화 상자를 종료
                 ExitThread(0);             // 스레드 종료5
             }
@@ -768,15 +768,11 @@ GLvoid update(int value) {
     elapsedTime = ((std::chrono::duration<double>)std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime)).count();
     totalElapsedTime += std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
     beforeTime = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 4; ++i)
+    /*for (int i = 0; i < 4; ++i)
     {
-        //recv(sock, reinterpret_cast<char*>(&gamePacket[i]), sizeof(gamePacket[i]), 0);
-        if (i == 0) {
-            //std::cout << "받음" << std::endl;
-            //std::cout << "플레이어 " << gamePacket[i].GetPlayerNumber() << "번 x : " << gamePacket[i].GetXPosition() << ", y : " << gamePacket[i].GetYPosition() << std::endl;
-            //std::cout << "플레이어 " << gamePacket[i].GetPlayerNumber() << "번 x : " << gamePacket[i].GetXPosition() << ", y : " << gamePacket[i].GetYPosition() << ", 분면 : " << gamePacket[i].GetCurrentSurface() << std::endl;
-        }
-    }
+        recv(sock, reinterpret_cast<char*>(&gamePacket[i]), sizeof(gamePacket[i]), 0);
+    }*/
+    recv(sock, (char*)&gamePacket, sizeof(gamePacket), 0);
     for (int i = 0; i < objects.size(); ++i)
     {
         objects[i].move(elapsedTime);
