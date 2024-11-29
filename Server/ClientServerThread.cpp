@@ -99,6 +99,7 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
     auto* CIA = args->GetClientInfoArray();
     auto* CSQ = args->GetClientServerQueue();
     auto* SCA = args->GetServerClientArray();
+    auto* Obstacles = args->GetObstacleArray();
     volatile bool* isGameStarted = args->GetGameStartOrNot();
     HANDLE* CIA_WriteEvent = args->GetClientInfoArrayWriteEvent();
     HANDLE* CIA_ReadEvent = args->GetClientInfoArrayReadEvent();
@@ -124,6 +125,7 @@ DWORD WINAPI ClientServerThread(LPVOID arg) {
                 if (elapsedTime > Timeout) {
                     EnterCriticalSection(SCA_CS);
                     send(s, (char*)SCA, sizeof(*SCA), 0);
+                    send(s, (char*)Obstacles, sizeof(*Obstacles), 0);
                     LeaveCriticalSection(SCA_CS);
 
                     elapsedTime = 0.0;
