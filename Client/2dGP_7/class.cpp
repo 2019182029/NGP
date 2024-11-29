@@ -1,14 +1,16 @@
 #include "class.h"
 
-std::default_random_engine engine(std::random_device{}());
+
+std::default_random_engine dre(0);
+
+std::default_random_engine engine(1);
+std::uniform_int_distribution<int> uid(-15, 15);
+std::uniform_int_distribution<int> uidZDir(1, 10);
+
 std::uniform_real_distribution<GLfloat> random_scale(0.25f, 0.5f);
-std::uniform_real_distribution<GLfloat> random_move(-0.1f, 0.1f);
 std::uniform_real_distribution<GLfloat> random_color(0.0f, 1.0f);
 std::uniform_real_distribution<double> random_rotate(-10.0f, 10.0f);
 
-std::uniform_real_distribution<GLfloat> random_snow_pos_z(-30.0f, 2.0f);
-std::uniform_real_distribution<GLfloat> random_snow_pos_x(-2.0f, 2.0f);
-std::uniform_real_distribution<GLfloat> random_snow_pos_y_move(-0.2f, -0.05f);
 
 obs::obs()
     : x(0), y(0), z(-45.0f),
@@ -38,7 +40,7 @@ void obss::init(int PosVbo, int NomalVbo) {
 }
 //---------------------------------------------------------------------------------------------------
 
-object_won::object_won()
+object::object()
     : x(0), y(0.25f), z(-100.0f),
     x_scale(0.25f), y_scale(0.25f), z_scale(0.25f),
     r(0), g(0), b(0), a(1.0f),
@@ -46,38 +48,33 @@ object_won::object_won()
     rotate(0), object_num(0), rotate_move(0) {
 }
 
-void object_won::init(int PosVbo, int NomalVbo) {
+void object::init(int PosVbo, int NomalVbo) {
     this->z = -100.0f;
-    this->x = 0.0f;
-    this->y = 2.0f;
+    this->x = uid(dre) / 10.0f;
+    this->y = uid(dre) / 10.0f;
+
+    this->x_move = uid(dre);
+    this->y_move = uid(dre);
+    this->z_move = uidZDir(dre);
+
     this->rotate_move = random_rotate(engine);
 
     this->r = random_color(engine);
     this->g = random_color(engine);
     this->b = random_color(engine);
 
-    float size = random_scale(engine);
+    float size = 0.25;
     this->x_scale = size;
-    this->y_scale = size;
+    this->y_scale = size;   
     this->z_scale = size;
 
-    this->x_move = random_move(engine);
-    this->y_move = random_move(engine);
 
     this->vvbo = PosVbo;
     this->nvbo = NomalVbo;
 }
 
-void object_won::move() {
-    this->x += this->x_move;
-    this->y += this->y_move;
-    this->z += 1.0f;
-
-    if (this->z > 5.0f) {
-        this->init(this->vvbo, this->nvbo);
-    }
-
-    if (this->x + this->x_scale + this->x_move > 2.0f || this->x - this->x_scale + this->x_move < -2.0f) {
+void object::move(double elapsedTime) {
+    if (this->x + this->x_scale + this->x_move*elapsedTime > 2.0f || this->x - this->x_scale + this->x_move*elapsedTime < -2.0f) {
         this->x_move *= -1;
         this->rotate_move *= -1;
     }
@@ -87,7 +84,18 @@ void object_won::move() {
     }
 
     this->rotate += this->rotate_move;
+
+    this->x += this->x_move * elapsedTime;
+    this->y += this->y_move * elapsedTime;
+    this->z += this->z_move * elapsedTime;
+
+    //서버한테 5로 수정요청
+
+    if (this->z > 5.0f) {
+        this->z = -100.0f + this->z;
+    }
 }
+
 //---------------------------------------------------------------------------------------------------------------
 light_set::light_set()
     : rotate_light(0),

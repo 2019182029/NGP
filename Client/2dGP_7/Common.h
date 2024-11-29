@@ -10,6 +10,8 @@
 #include <stdlib.h> // exit(), ...
 #include <string.h> // strncpy(), ...
 
+#include <chrono>
+
 #pragma comment(lib, "ws2_32") // ws2_32.lib 링크
 
 // 소켓 함수 오류 출력 후 종료
