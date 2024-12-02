@@ -10,6 +10,8 @@
 #include <stdlib.h> // exit(), ...
 #include <string.h> // strncpy(), ...
 
+#include <chrono>
+
 #pragma comment(lib, "ws2_32") // ws2_32.lib 링크
 
 // 소켓 함수 오류 출력 후 종료
@@ -51,3 +53,16 @@ void err_display(int errcode)
 	printf("[오류] %s\n", (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
 }
+
+class Vertex {
+private:
+	float x, y, z;
+	bool item;
+public:
+	void SetPosition(float fx, float fy, float fz) { x = fx; y = fy; z = fz; }
+
+	float GetXPosition() { return x; }
+	float GetYPosition() { return y; }
+	float GetZPosition() { return z; }
+	bool GetItem() { return item; }
+};

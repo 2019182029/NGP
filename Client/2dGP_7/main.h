@@ -21,6 +21,8 @@
 #include <vector>
 #include <string>
 #include <array>
+
+#include <chrono>
 void make_shaderProgram();
 void make_vertexShaders();
 void make_fragmentShaders();
@@ -34,8 +36,6 @@ GLvoid keyUp(unsigned char, int, int);
 GLvoid handleEvent(unsigned char key, bool state);
 GLvoid Motion(int x, int y);
 GLvoid MousePoint(int button, int state, int x, int y);
-GLvoid jump_ok(int value);
-GLvoid jump();
 GLvoid object_ok(int value);
 GLvoid next_stage(int value);
 GLvoid update(int value);

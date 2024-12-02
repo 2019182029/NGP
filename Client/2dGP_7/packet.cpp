@@ -1,5 +1,5 @@
 #include <Windows.h> // For BYTE definition
-#include "Packet.h"
+#include "packet.h"
 
 Packet::Packet() : x(0), y(0) {
     state[0] = 0;
@@ -18,10 +18,10 @@ void Packet::setKeyState(char key, bool isPressed) {
 
     // 키에 따른 비트 매핑 (2~5번째 비트: W, A, D, C)
     switch (key) {
-    case 'w': bitMask = 0x01; break; // W -> 2번째 비트
-    case 'a': bitMask = 0x02; break; // A -> 3번째 비트
-    case 'd': bitMask = 0x04; break; // D -> 4번째 비트
-    case 'c': bitMask = 0x08; break; // C -> 5번째 비트
+    case 'w': bitMask = 0x08; break; // W -> 2번째 비트
+    case 'a': bitMask = 0x04; break; // A -> 3번째 비트
+    case 'd': bitMask = 0x02; break; // D -> 4번째 비트
+    case 'c': bitMask = 0x01; break; // C -> 5번째 비트
     default: return; // 유효하지 않은 키
     }
 
@@ -39,10 +39,10 @@ bool Packet::getKeyState(char key) const {
     BYTE bitMask = 0;
 
     switch (key) {
-    case 'w': bitMask = 0x01; break;
-    case 'a': bitMask = 0x02; break;
-    case 'd': bitMask = 0x04; break;
-    case 'c': bitMask = 0x08; break;
+    case 'w': bitMask = 0x08; break;
+    case 'a': bitMask = 0x04; break;
+    case 'd': bitMask = 0x02; break;
+    case 'c': bitMask = 0x01; break;
     default: return false; // 유효하지 않은 키
     }
 
