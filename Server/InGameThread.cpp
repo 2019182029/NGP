@@ -56,7 +56,7 @@ void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerC
 		(*Obstacles)[i].SetZPosition(-100.0f);
 
 		// 방향
-		(*Obstacles)[i].SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, (float)uidZDir(dre));
+		(*Obstacles)[i].SetDir(uid(dre) / 10.0f, (uid(dre) / 10.0f) + 2.0f, (float)uidZDir(dre));
 
 		// 아이템인가?
 		if (uidItem(dre) / 100.0f < 0.25f) {
