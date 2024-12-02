@@ -78,7 +78,7 @@ std::unordered_map<char, bool> keyStates = {
 };
 
 std::default_random_engine engine2(std::random_device{}());
-std::uniform_real_distribution<double> random_model(1, 4);
+std::uniform_int_distribution<int> random_model(1, 3);
 
 obs wall;
 
@@ -365,7 +365,6 @@ int main(int argc, char** argv)
     CloseHandle(hThread);
 
     //packetclient.SetPlayerNumber(1);
-    object_test();
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -381,6 +380,8 @@ int main(int argc, char** argv)
     make_shaderProgram();
     InitBuffer();
     glutWarpPointer(800 / 2, 800 / 2);
+
+    object_test();
     //glutTimerFunc(1000, next_stage, 1);
     glutTimerFunc(60, update, 1);
 
@@ -583,7 +584,7 @@ void drawScene()
     }
 
     //장애물들 그리는 반복문
-    for (int i = 0; i < objects.size(); i++) {
+    for (int i = 0; i < objects.size(); ++i) {
         // 모델 행렬 초기화
         glm::mat4 modelMatrix(1.0f);
         // 모델 행렬을 셰이더에 전달
@@ -608,11 +609,13 @@ void drawScene()
         if (objects[i].a == 0.1f) {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        }
-        glDrawArrays(GL_TRIANGLES, 0, objects[i].object_num);
+            glDrawArrays(GL_TRIANGLES, 0, objects[i].object_num);
 
-        if (objects[i].a == 0.1f) {
             glDisable(GL_BLEND);
+        }
+        else
+        {
+            glDrawArrays(GL_TRIANGLES, 0, objects[i].object_num);
         }
     }
     glDisableVertexAttribArray(PosLocation);
@@ -772,32 +775,34 @@ char* filetobuf(const char* file)
 
 GLvoid update(int value) {
 
-    currentTime = std::chrono::high_resolution_clock::now();
-    elapsedTime = ((std::chrono::duration<double>)std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime)).count();
-    totalElapsedTime += std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
-    beforeTime = std::chrono::high_resolution_clock::now();
+
     recv(sock, (char*)&gamePacket, sizeof(gamePacket), 0);
     recv(sock, (char*)&objectPacket, sizeof(objectPacket), 0);
-    
-    for (int i = 0; i <10; ++i)
+
+
+
+    for (int i = 0; i < objects.size(); ++i)
     {
         objects[i].x = objectPacket[i].GetXPosition();
         objects[i].y = objectPacket[i].GetYPosition();
         objects[i].z = objectPacket[i].GetZPosition();
 
-        if (gamePacket[i].GetAppliedBit())
+        if (gamePacket[packetclient.GetPlayerNumber()].GetAppliedBit())
         {
-                objects[i].a = 0.1f;   
+            objects[i].a = 0.1f;
         }
         else
         {
             objects[i].a = 1.0f;
         }
+
         if (objectPacket[i].GetItem())
         {
             objects[i].vvbo = cubeNomalVbo2;
             objects[i].nvbo = cubeNomalVbo2;
+            objects[i].object_num = CubeObject;
         }
+        std::cout << i << "번째 오브젝트 좌표 " << objects[i].x << " - " << objects[i].x << " - " << objects[i].z << " " << std::endl;
     }
 
     for (int i = 0; i < 4; ++i)
@@ -851,18 +856,15 @@ GLvoid update(int value) {
         default:
             break;
         }
-        
+
     }
 
-    if (totalElapsedTime.count() >= 16'667) {
-        totalElapsedTime = std::chrono::microseconds(0);  // totalElapsedTime를 0초로 갱신
-    }
 
     InitBuffer();
     glutPostRedisplay();
 
     if (game_check) {
-        glutTimerFunc(10, update, 1);    
+        glutTimerFunc(10, update, 1);
     }
 }
 
@@ -904,7 +906,7 @@ GLvoid MousePoint(int button, int state, int x, int y) {
 }
 
 GLvoid Motion(int x, int y) {
-    
+
 }
 
 
@@ -1034,10 +1036,12 @@ GLvoid object_test() {
     for (int i = 0; i < 10; ++i)
     {
         object new_object;
-        
+
         int model = random_model(engine2);
+
+
         if (model == 1) {
-            new_object.init(RockPosVbo, RockNomalVbo); 
+            new_object.init(RockPosVbo, RockNomalVbo);
             new_object.object_num = RockObject;
         }
         else if (model == 2)
@@ -1045,9 +1049,9 @@ GLvoid object_test() {
             new_object.init(teapotPosVbo, teapotNomalVbo);
             new_object.object_num = teapotObject;
         }
-        else 
+        else
         {
-            new_object.init(spherePosVbo, sphereNomalVbo); 
+            new_object.init(spherePosVbo, sphereNomalVbo);
             new_object.object_num = sphereObject;
         }
 
