@@ -303,11 +303,23 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             return TRUE;
 
         case ID_EXIT:
-            EndDialog(hDlg, IDCANCEL);
+            // 소켓이 열려있으면 닫음
             if (sock != INVALID_SOCKET) {
                 closesocket(sock);
                 sock = INVALID_SOCKET;
             }
+
+            // 버튼 상태 초기화
+            EnableWindow(hConnectButton, TRUE);
+            EnableWindow(hReadyButton, FALSE);
+            EnableWindow(hCancelButton, FALSE);
+
+            // IP 입력창을 활성화
+            SendMessage(hEditIP, IPM_CLEARADDRESS, 0, 0); // IP 입력 필드를 초기화
+
+            // 대화 상자 초기화 메시지 표시
+            DisplayText("연결이 종료되었습니다. 새 IP를 입력하세요.\n");
+
             return TRUE;
         }
         return FALSE;
@@ -639,7 +651,7 @@ void drawScene()
     // 텍스트의 위치를 화면 우측 상단으로 설정
     float x = windowWidth - 100; // 화면 너비에서 100px 떨어진 위치
     float y = windowHeight - 30; // 화면 높이에서 30px 떨어진 위치
-    renderBitmapString(x, y, GLUT_BITMAP_HELVETICA_18, ("HP: " + std::to_string(gameCharacters[1].hp)).c_str());
+    renderBitmapString(x, y, GLUT_BITMAP_HELVETICA_18, ("Item: " + std::to_string(gamePacket[packetclient.GetPlayerNumber()].GetItemBit())).c_str());
 
     glPopMatrix();
 
@@ -779,8 +791,6 @@ GLvoid update(int value) {
     recv(sock, (char*)&gamePacket, sizeof(gamePacket), 0);
     recv(sock, (char*)&objectPacket, sizeof(objectPacket), 0);
 
-
-
     for (int i = 0; i < objects.size(); ++i)
     {
         objects[i].x = objectPacket[i].GetXPosition();
@@ -798,7 +808,7 @@ GLvoid update(int value) {
 
         if (objectPacket[i].GetItem())
         {
-            objects[i].vvbo = cubeNomalVbo2;
+            objects[i].vvbo = cubePosVbo2;
             objects[i].nvbo = cubeNomalVbo2;
             objects[i].object_num = CubeObject;
         }
@@ -1057,4 +1067,7 @@ GLvoid object_test() {
 
         objects.push_back(new_object);
     }
+
+    InitBuffer();
+    glutPostRedisplay();
 }
