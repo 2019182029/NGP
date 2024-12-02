@@ -1,8 +1,3 @@
-// Todo
-// 
-// 장애물 초기 위치 및 속도 : Init()
-// 아이템
-
 #include "Common.h"
 #include "InGameThread.h"
 
@@ -60,7 +55,7 @@ void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerC
 		obstacle.SetZPosition(-100.0f);
 
 		// 방향
-		obstacle.SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, uidZDir(dre));
+		obstacle.SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, (float)uidZDir(dre));
 	}
 
 	*isGameStart = true;
@@ -132,7 +127,8 @@ void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 					if (!(*ClientInfo)[i].GetSurvivingBit()) { continue; }
 
 					if (i != packet.GetPlayerNumber()) {  // 해당 플레이어를 제외한 나머지 모든 플레이어에게
-						(*ClientInfo)[i].SetAplliedBit(true);  // 아이템 효과 적용 후
+						(*ClientInfo)[i].SetAplliedBit(true);  // 아이템 효과 적용
+						(*ClientInfo)[i].SetElapsedTime(std::chrono::high_resolution_clock::now());  // 아이템 효과 적용 시간 갱신
 					}
 				}
 				(*ClientInfo)[packet.GetPlayerNumber()].SetItemBit(0);  // 해당 플레이어의 아이템 보유 여부를 false로 갱신
@@ -147,8 +143,8 @@ void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 	(*ClientInfo)[packet.GetPlayerNumber()].SetKeyState(packet.GetKeyState());  // ClientInfo의 KeyState 갱신
 }
 
-Vertex ModifyPlayerPosition(Object& player) {
-	Vertex PlayerPosition;
+Position ModifyPlayerPosition(Object& player) {
+	Position PlayerPosition;
 
 	switch (player.GetCurrentSurface()) {
 	case 0:  // 아랫면이 밑면일 때
@@ -175,7 +171,7 @@ Vertex ModifyPlayerPosition(Object& player) {
 }
 
 void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
-	Vertex currentPosition, nextPosition;
+	Position currentPosition, nextPosition;
 
 	for (auto& player : *ClientInfo) {
 		if (!player.GetValidBit()) { continue; }
@@ -316,6 +312,12 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 		default:
 			break;
 		}
+
+		if (player.GetAppliedBit()) {  // 아이템 효과가 적용된 플레이어일 경우
+			if (((std::chrono::duration<double>)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - player.GetElapsedTime())).count() > 2.5) {  // 아이템 효과 적용 이후 2.5초 경과 시
+				player.SetAplliedBit(0);  // 아이템 효과 제거
+			}
+		}
 	}
 }
 
@@ -372,18 +374,23 @@ void CheckPlayerObjectCollision(std::array<Object, 4>* ClientInfo, std::array<Ob
 			break;
 		}
 
-		for (auto& obstacle : *Obstacles) {
-			// 플레이어와 장애물의 거리 계산을 통한 충돌 검사
-			if (sqrt((playerX - obstacle.GetXPosition()) * (playerX - obstacle.GetXPosition()) + 
-				     (playerY - obstacle.GetYPosition()) * (playerY - obstacle.GetYPosition()) + 
-				     (-1.0f - obstacle.GetZPosition()) * (-1.0f - obstacle.GetZPosition())) < 0.5f) {  // 플레이어와 장애물 간의 거리가 0.5f 미만이라면
-				player.SetSurvivingBit(0);
+		for (int i = 0; i < 10; ++i) {
+			// 플레이어와 장애물 간의 거리 계산을 통한 충돌 검사
+			if (sqrt((playerX - (*Obstacles)[i].GetXPosition()) * (playerX - (*Obstacles)[i].GetXPosition()) +
+				     (playerY - (*Obstacles)[i].GetYPosition()) * (playerY - (*Obstacles)[i].GetYPosition()) +
+				     (-1.0f - (*Obstacles)[i].GetZPosition()) * (-1.0f - (*Obstacles)[i].GetZPosition())) < 0.5f) {  // 플레이어와 장애물 간의 거리가 0.5f 미만이라면
+				if (i == 0) {  // 장애물이 아이템이라면
+					player.SetItemBit(1);
+				}
+				else {
+					player.SetSurvivingBit(0);
+				}
 			}
 		}
 	}
 }
 
-void RenewalServerClientArray(std::array<Packet, 4>* ServerClientArray, std::array<Vertex, 10>* ObstacleArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, CRITICAL_SECTION* ServerClientArray_CS) {
+void RenewalServerClientArray(std::array<Packet, 4>* ServerClientArray, std::array<Position, 10>* ObstacleArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, CRITICAL_SECTION* ServerClientArray_CS) {
 	EnterCriticalSection(ServerClientArray_CS);
 
 	// 플레이어 갱신

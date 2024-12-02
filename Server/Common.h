@@ -50,7 +50,7 @@ public:
 	int GetSeed() { return state[1] & 0b00000011; }
 };
 
-class Vertex {
+class Position {
 private:
 	float x, y, z;
 
@@ -69,7 +69,7 @@ private:
 	std::array<Packet, 4>* m_ClientInfoArray;
 	std::queue<Packet>* m_ClientServerQueue;
 	std::array<Packet, 4>* m_ServerClientArray;
-	std::array<Vertex, 10>* m_ObstacleArray;
+	std::array<Position, 10>* m_ObstacleArray;
 
 	HANDLE* m_ClientInfoArray_WriteEvent;
 	HANDLE* m_ClientInfoArray_ReadEvent;
@@ -83,7 +83,7 @@ public:
 	void SetClientInfoArray(std::array<Packet, 4>* ClientInfoArray) { m_ClientInfoArray = ClientInfoArray; }
 	void SetClientServerQueue(std::queue<Packet>* ClientServerQueue) { m_ClientServerQueue = ClientServerQueue; }
 	void SetServerClientArray(std::array<Packet, 4>* ServerClientArray) { m_ServerClientArray = ServerClientArray; }
-	void SetObstacleArray(std::array<Vertex, 10>* ObstacleArray) { m_ObstacleArray = ObstacleArray; }
+	void SetObstacleArray(std::array<Position, 10>* ObstacleArray) { m_ObstacleArray = ObstacleArray; }
 	void SetClientInfoArrayWriteEvent(HANDLE* ClientInfoArray_WriteEvent) { m_ClientInfoArray_WriteEvent = ClientInfoArray_WriteEvent; }
 	void SetClientInfoArrayReadEvent(HANDLE* ClientInfoArray_ReadEvent) { m_ClientInfoArray_ReadEvent = ClientInfoArray_ReadEvent; }
 	void SetClientServerQueueCS(CRITICAL_SECTION* ClientServerQueue_CS) { m_ClientServerQueue_CS = ClientServerQueue_CS; }
@@ -94,7 +94,7 @@ public:
 	std::array<Packet, 4>* GetClientInfoArray() { return m_ClientInfoArray; }
 	std::queue<Packet>* GetClientServerQueue() { return m_ClientServerQueue; }
 	std::array<Packet, 4>* GetServerClientArray() { return m_ServerClientArray; }
-	std::array<Vertex, 10>* GetObstacleArray() { return m_ObstacleArray; }
+	std::array<Position, 10>* GetObstacleArray() { return m_ObstacleArray; }
 	HANDLE* GetClientInfoArrayWriteEvent() { return m_ClientInfoArray_WriteEvent; }
 	HANDLE* GetClientInfoArrayReadEvent() { return m_ClientInfoArray_ReadEvent; }
 	CRITICAL_SECTION* GetClientServerQueueCS() { return m_ClientServerQueue_CS; }

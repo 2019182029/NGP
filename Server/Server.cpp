@@ -8,7 +8,7 @@
 std::array<Packet, 4> ClientInfoArray;
 std::queue<Packet> ClientServerQueue;
 std::array<Packet, 4> ServerClientArray;
-std::array<Vertex, 10> ObstacleArray;
+std::array<Position, 10> ObstacleArray;
 
 // µø±‚»≠ ∞¥√º
 HANDLE ClientInfoArray_WriteEvent;
