@@ -189,20 +189,18 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 		}
 
 		// 플레이어 간의 충돌 검사
-		for (int i = player.GetPlayerNumber() + 1; i < 4; ++i) {
+		for (int i = 0; i < 4; ++i) {
+			if (player.GetPlayerNumber() == i) { continue; }
+
 			if (!(*ClientInfo)[i].GetValidBit()) { continue; }
 			if (!(*ClientInfo)[i].GetSurvivingBit()) { continue; }
 
-			// x값 충돌 검사
-			if (nextPosition.GetXPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() - 0.25f ||
-				nextPosition.GetXPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() + 0.25f) {
-				nextPosition.SetPosition(currentPosition.GetXPosition(), nextPosition.GetYPosition(), 0.0f);
-			}
-
-			// y값 충돌 검사
-			if (nextPosition.GetYPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() - 0.25f ||
-				nextPosition.GetYPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f) {
-				nextPosition.SetPosition(nextPosition.GetXPosition(), currentPosition.GetYPosition(), 0.0f);
+			// AABB 충돌 검사
+			if ((nextPosition.GetXPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() - 0.25f &&
+				nextPosition.GetXPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() + 0.25f) &&
+				(nextPosition.GetYPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() - 0.25f &&
+				nextPosition.GetYPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f)) {
+				nextPosition.SetPosition(currentPosition.GetXPosition(), currentPosition.GetYPosition(), 0.0f);
 			}
 		}
 
@@ -377,7 +375,7 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 		// 클리아인트, 장애물 이동 
 		MovePlayer(&Players, elapsedTime);
-		MoveObstacle(&Obstacles, elapsedTime);
+		//MoveObstacle(&Obstacles, elapsedTime);
 
 		// 충돌 검사
 		CheckPlayerObjectCollision(&Players, &Obstacles);
