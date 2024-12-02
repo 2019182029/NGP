@@ -4,6 +4,9 @@
 #include "packet.h"
 #include "Common.h"
 #include "resource.h"
+
+#include <unordered_map>
+
 #pragma comment(lib, "winmm")
 #include <mmsystem.h>
 
@@ -13,6 +16,8 @@
 
 #define SERVERPORT 9000
 #define BUFSIZE    512
+
+#define TESTNUM    0
 
 // 대화상자 프로시저
 INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
@@ -37,6 +42,10 @@ GLuint vao;
 
 Packet packetclient;
 
+std::array<Packet, 4> gamePacket;
+
+std::array<Vertex, 10> objectPacket;
+
 GLchar* vertexSource, * fragmentSource;
 GLuint vertexShader, fragmentShader;
 GLuint shaderProgramID;
@@ -50,19 +59,40 @@ GLuint cubeNomalVbo2;
 GLuint RockPosVbo;
 GLuint RockNomalVbo;
 
-GLuint hpPosVbo;
-GLuint hpNomalVbo;
+GLuint spherePosVbo;
+GLuint sphereNomalVbo;
 
 GLuint teapotPosVbo;
 GLuint teapotNomalVbo;
 
+auto beforeTime = std::chrono::high_resolution_clock::now();
+auto currentTime = std::chrono::high_resolution_clock::now();
+double elapsedTime;
+auto totalElapsedTime = std::chrono::microseconds(0);
+
+std::unordered_map<char, bool> keyStates = {
+    {'w', false},
+    {'a', false},
+    {'d', false},
+    {'c', false}
+};
+
 std::default_random_engine engine2(std::random_device{}());
-std::uniform_real_distribution<double> random_model(1, 6);
+std::uniform_real_distribution<double> random_model(1, 4);
 
 obs wall;
-obss main_character(cubePosVbo2, cubeNomalVbo2);
 
-std::vector<object_won> objects;
+std::array<obss, 4> gameCharacters = {
+    obss(cubePosVbo2, cubeNomalVbo2),  // 1st element
+    obss(cubePosVbo2, cubeNomalVbo2),  // 2nd element
+    obss(cubePosVbo2, cubeNomalVbo2),  // 3rd element
+    obss(cubePosVbo2, cubeNomalVbo2)   // 4th element
+};
+
+
+std::vector<object> objects;
+
+GLvoid object_test();
 
 objRead RockReader;
 GLint RockObject = RockReader.loadObj_normalize_center("rock.obj");
@@ -117,7 +147,7 @@ void renderBitmapString(float x, float y, void* font, const char* string) {
     }
 }
 
-bool checkCollision(object_won& , obss& );
+bool checkCollision(object&, obss&);
 
 int move_check{};
 int jump_check = 3;
@@ -128,24 +158,29 @@ int playerHP = 100;
 
 DWORD WINAPI ReceiveDataThread(LPVOID arg) {
     HWND hDlg = reinterpret_cast<HWND>(arg);
-    Packet recvPacket;
     u_long mode = 1;
     ioctlsocket(sock, FIONBIO, &mode); // Set non-blocking mode
-
+    Packet test;
     while (gameReady) {
-        int bytesReceived = recv(sock, reinterpret_cast<char*>(&recvPacket), sizeof(recvPacket), 0);
+        int bytesReceived = recv(sock, reinterpret_cast<char*>(&test), sizeof(test), 0);
+
         if (bytesReceived > 0) {
             // 게임 시작 비트를 확인하고 GUI 종료 및 스레드 종료
-            if (recvPacket.isGameStarted()) {
+            std::cout << "플레이어 번호 :" << packetclient.GetPlayerNumber() << std::endl;
+
+            if (test.GetStartBit()) {
+                packetclient.SetStartBit(test.GetStartBit());
+                mode = 0;
+                ioctlsocket(sock, FIONBIO, &mode); // Set blocking mode
                 EndDialog(hDlg, IDCANCEL); // GUI 대화 상자를 종료
-                ExitThread(0);             // 스레드 종료
+                ExitThread(0);             // 스레드 종료5
             }
         }
         else if (bytesReceived == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
             DisplayError("recv()");
             ExitThread(0); // 에러 시 스레드 종료
         }
-        Sleep(10); // Small delay to avoid high CPU usage
+        Sleep(100); // Small delay to avoid high CPU usage
     }
 
     return 0;
@@ -210,17 +245,30 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 sock = INVALID_SOCKET;
                 return TRUE;
             }
+            recv(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
+            if (!packetclient.GetValidBit())
+            {
+                DisplayText("자리가 모두 차있습니다. 다른 서버에 연결해주세요\n", buf);
+                Packet a;
+                packetclient = a;
+                closesocket(sock);
+                EnableWindow(hCancelButton, FALSE);
+                EnableWindow(hReadyButton, FALSE);
+                EnableWindow(hConnectButton, TRUE);
 
-            // Display connection success message and enable "Ready" button
-            DisplayText("준비 완료되었습니다. 서버에 연결되었습니다. IP 주소: %s\n", buf);
-            EnableWindow(hReadyButton, TRUE);
-            EnableWindow(hConnectButton, FALSE);  // Disable "Connect" button after successful connection
+            }
+            else {
+                // Display connection success message and enable "Ready" button
+                DisplayText("준비 완료되었습니다. 서버에 연결되었습니다. IP 주소: %s\n", buf);
+                EnableWindow(hReadyButton, TRUE);
+                EnableWindow(hConnectButton, FALSE);  // Disable "Connect" button after successful connection
+            }
             return TRUE;
         }
 
-        // Ready 상태일 때 수신 스레드를 생성
+                       // Ready 상태일 때 수신 스레드를 생성
         case ID_READY:
-            packetclient.setReady(true);
+            packetclient.SetReadyBit(true);
             send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
 
             EnableWindow(hReadyButton, FALSE);
@@ -234,7 +282,7 @@ INT_PTR CALLBACK DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
         case ID_CANCEL:
             // Packet에서 준비 비트를 해제
-            packetclient.setReady(false);
+            packetclient.SetReadyBit(false);
 
             // 서버에 변경된 Packet을 전송
             send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
@@ -316,6 +364,9 @@ int main(int argc, char** argv)
 
     CloseHandle(hThread);
 
+    //packetclient.SetPlayerNumber(1);
+    object_test();
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowPosition(100, 100);
@@ -330,11 +381,43 @@ int main(int argc, char** argv)
     make_shaderProgram();
     InitBuffer();
     glutWarpPointer(800 / 2, 800 / 2);
-    glutTimerFunc(1000, next_stage, 1);
+    //glutTimerFunc(1000, next_stage, 1);
     glutTimerFunc(60, update, 1);
 
-    main_character.init(cubePosVbo2, cubeNomalVbo2);
-    main_character.Object = CubeObject;
+
+    for (int i = 0; i < 4; ++i) {
+        gameCharacters[i].init(cubePosVbo2, cubeNomalVbo2);  // Initialize with the appropriate VBOs
+        gameCharacters[i].Object = CubeObject;  // Set the Object for each gameCharacter
+
+        switch (i) {
+        case 0:  // 0번 플레이어
+            gamePacket[i].SetPosition(0.0f, 0.0f);
+            gamePacket[i].SetCurrentSurface(0);  // 아랫면
+            gamePacket[i].SetPlayerNumber(0);
+            break;
+
+        case 1:  // 1번 플레이어
+            gamePacket[i].SetPosition(2.0f, 2.0f);
+            gamePacket[i].SetCurrentSurface(1);  // 아랫면
+            gamePacket[i].SetPlayerNumber(1);
+            break;
+
+        case 2:  // 2번 플레이어
+            gamePacket[i].SetPosition(0.0f, 4.0f);
+            gamePacket[i].SetCurrentSurface(2);  // 아랫면
+            gamePacket[i].SetPlayerNumber(2);
+            break;
+
+        case 3:  // 3번 플레이어
+            gamePacket[i].SetPosition(-2.0f, 2.0f);
+            gamePacket[i].SetCurrentSurface(3);  // 아랫면
+            gamePacket[i].SetPlayerNumber(3);
+            break;
+
+        default:
+            break;
+        }
+    }
 
     PlaySound(TEXT(GAME_BGM), NULL, SND_ASYNC | SND_LOOP);
 
@@ -374,7 +457,7 @@ void drawScene()
 
     unsigned int ambiont = glGetUniformLocation(shaderProgramID, "amb");
 
-    glUniform3f(ambiont, 0.0,0.0,0.0);
+    glUniform3f(ambiont, 0.0, 0.0, 0.0);
 
     int objColorLocation = glGetUniformLocation(shaderProgramID, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
 
@@ -449,7 +532,7 @@ void drawScene()
         }
         modelMatrix = glm::translate(modelMatrix, glm::vec3(wall.x, wall.y, wall.z)); // 이동
         modelMatrix = glm::scale(modelMatrix, glm::vec3(wall.x_scale, wall.y_scale, wall.z_scale));
-        glUniform4f(objColorLocation, wall.r, wall.g, wall.b,wall.a);
+        glUniform4f(objColorLocation, wall.r, wall.g, wall.b, wall.a);
 
         glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 
@@ -465,31 +548,42 @@ void drawScene()
 
     }
 
-    //메인 캐릭터 그리는 반복문
-    {
-        // 모델 행렬 초기화
-        glm::mat4 modelMatrix(1.0f);
-        // 모델 행렬을 셰이더에 전달
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(main_character.x, main_character.y, main_character.z)); // 이동
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(main_character.x_scale, main_character.y_scale, main_character.z_scale));
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(-light.cameraRotation), glm::vec3(0.0f, 0.0f, 1.0f)); // z축으로 회전
-        glUniform4f(objColorLocation, main_character.r, main_character.g, main_character.b, 1.0);
+    // 게임 캐릭터
+    for (int i = 0; i < 4; ++i) {
+        if (gamePacket[i].GetSurvivingBit()) {
+            // 모델 행렬 초기화
+            glm::mat4 modelMatrix(1.0f);
 
-        glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+            // 모델 행렬을 셰이더에 전달
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(gameCharacters[i].x, gameCharacters[i].y, gameCharacters[i].z)); // 이동
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(gameCharacters[i].x_scale, gameCharacters[i].y_scale, gameCharacters[i].z_scale));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(-light.cameraRotation), glm::vec3(0.0f, 0.0f, 1.0f)); // z축으로 회전
 
-        glBindBuffer(GL_ARRAY_BUFFER, main_character.vvbo);
-        glVertexAttribPointer(PosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-        glEnableVertexAttribArray(PosLocation);
+            // 색상 설정
+            glUniform4f(objColorLocation, gameCharacters[i].r, gameCharacters[i].g, gameCharacters[i].b, 1.0f);
+            if (gamePacket[i].GetPlayerNumber() == packetclient.GetPlayerNumber())
+            {
+                glUniform4f(objColorLocation, 0.1f, 0.5f, 0.1f, 1.0f);
+            }
+            // 모델 행렬을 셰이더에 전달
+            glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 
-        glBindBuffer(GL_ARRAY_BUFFER, main_character.nvbo);
-        glVertexAttribPointer(NomalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-        glEnableVertexAttribArray(NomalLocation);
+            // 버퍼 바인딩
+            glBindBuffer(GL_ARRAY_BUFFER, gameCharacters[i].vvbo);
+            glVertexAttribPointer(PosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+            glEnableVertexAttribArray(PosLocation);
 
-        glDrawArrays(GL_TRIANGLES, 0, main_character.Object);
+            glBindBuffer(GL_ARRAY_BUFFER, gameCharacters[i].nvbo);
+            glVertexAttribPointer(NomalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+            glEnableVertexAttribArray(NomalLocation);
 
+            // 오브젝트 그리기
+            glDrawArrays(GL_TRIANGLES, 0, gameCharacters[i].Object); // gameCharacters[i].Object 가 그릴 삼각형의 개수
+        }
     }
+
     //장애물들 그리는 반복문
-    for (int i = 0; i < objects.size(); i++){
+    for (int i = 0; i < objects.size(); i++) {
         // 모델 행렬 초기화
         glm::mat4 modelMatrix(1.0f);
         // 모델 행렬을 셰이더에 전달
@@ -511,13 +605,13 @@ void drawScene()
         glVertexAttribPointer(NomalLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
         glEnableVertexAttribArray(NomalLocation);
 
-        if (sever_level > 2) {
+        if (objects[i].a == 0.1f) {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
         glDrawArrays(GL_TRIANGLES, 0, objects[i].object_num);
 
-        if (sever_level >2 ) {
+        if (objects[i].a == 0.1f) {
             glDisable(GL_BLEND);
         }
     }
@@ -542,7 +636,7 @@ void drawScene()
     // 텍스트의 위치를 화면 우측 상단으로 설정
     float x = windowWidth - 100; // 화면 너비에서 100px 떨어진 위치
     float y = windowHeight - 30; // 화면 높이에서 30px 떨어진 위치
-    renderBitmapString(x, y, GLUT_BITMAP_HELVETICA_18, ("HP: " + std::to_string(main_character.hp)).c_str());
+    renderBitmapString(x, y, GLUT_BITMAP_HELVETICA_18, ("HP: " + std::to_string(gameCharacters[1].hp)).c_str());
 
     glPopMatrix();
 
@@ -575,7 +669,7 @@ void InitBuffer()
 
     glGenBuffers(1, &cubePosVbo2);
     glBindBuffer(GL_ARRAY_BUFFER, cubePosVbo2);
-    glBufferData(GL_ARRAY_BUFFER,CubeReader.outvertex.size() * sizeof(glm::vec3), &CubeReader.outvertex[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, CubeReader.outvertex.size() * sizeof(glm::vec3), &CubeReader.outvertex[0], GL_STATIC_DRAW);
 
     glGenBuffers(1, &cubeNomalVbo2);
     glBindBuffer(GL_ARRAY_BUFFER, cubeNomalVbo2);
@@ -590,12 +684,12 @@ void InitBuffer()
     glBufferData(GL_ARRAY_BUFFER, RockReader.outnormal.size() * sizeof(glm::vec3), &RockReader.outnormal[0], GL_STATIC_DRAW);
 
 
-    glGenBuffers(1, &hpPosVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, hpPosVbo);
+    glGenBuffers(1, &spherePosVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, spherePosVbo);
     glBufferData(GL_ARRAY_BUFFER, sphere.outvertex.size() * sizeof(glm::vec3), &sphere.outvertex[0], GL_STATIC_DRAW);
 
-    glGenBuffers(1, &hpNomalVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, hpNomalVbo);
+    glGenBuffers(1, &sphereNomalVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, sphereNomalVbo);
     glBufferData(GL_ARRAY_BUFFER, sphere.outnormal.size() * sizeof(glm::vec3), &sphere.outnormal[0], GL_STATIC_DRAW);
 
     glGenBuffers(1, &teapotPosVbo);
@@ -676,254 +770,145 @@ char* filetobuf(const char* file)
     return buf;
 }
 
-
-
 GLvoid update(int value) {
 
-    for (int i = 0; i < objects.size(); i++)
+    currentTime = std::chrono::high_resolution_clock::now();
+    elapsedTime = ((std::chrono::duration<double>)std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime)).count();
+    totalElapsedTime += std::chrono::duration_cast<std::chrono::microseconds>(currentTime - beforeTime);
+    beforeTime = std::chrono::high_resolution_clock::now();
+    recv(sock, (char*)&gamePacket, sizeof(gamePacket), 0);
+    recv(sock, (char*)&objectPacket, sizeof(objectPacket), 0);
+    
+    for (int i = 0; i <10; ++i)
     {
-        objects[i].move();
+        objects[i].x = objectPacket[i].GetXPosition();
+        objects[i].y = objectPacket[i].GetYPosition();
+        objects[i].z = objectPacket[i].GetZPosition();
 
-        if (checkCollision(objects[i], main_character)) {
-            objects[i].z = -200.0f; 
-            main_character.hp -= 10;
-            main_character.init(objects[i].vvbo, objects[i].nvbo);
-            main_character.Object = objects[i].object_num;
-
-            if (main_character.hp <= 0)
-            {
-                objects.clear();
-               
-                sever_level = 0;
-                game_check = false;
-                exit(0);
-            }
-            else
-            {
-                main_character.change_color(objects[i].r, objects[i].g, objects[i].b);
-            }
+        if (gamePacket[i].GetAppliedBit())
+        {
+                objects[i].a = 0.1f;   
+        }
+        else
+        {
+            objects[i].a = 1.0f;
+        }
+        if (objectPacket[i].GetItem())
+        {
+            objects[i].vvbo = cubeNomalVbo2;
+            objects[i].nvbo = cubeNomalVbo2;
         }
     }
 
-    
-
-    
-
-    if (light.cameraRotation == 0)
+    for (int i = 0; i < 4; ++i)
     {
-        main_character.y = 0.25f + 0.1f * main_character.jump_scale;
-        light.light_y = 8.0f;
-
+        switch (gamePacket[i].GetCurrentSurface())
+        {
+        case 0:
+            gameCharacters[i].y = gamePacket[i].getY() + gameCharacters[i].y_scale;
+            gameCharacters[i].x = gamePacket[i].getX();
+            if (i == packetclient.GetPlayerNumber())
+            {
+                light.cameraRotation = 0;
+                light.camera_x = 0.0f;
+                light.camera_y = 2.0f;
+                light.light_y = 8.0f;
+            }
+            break;
+        case 1:
+            gameCharacters[i].x = gamePacket[i].getX() - gameCharacters[i].x_scale;
+            gameCharacters[i].y = gamePacket[i].getY();
+            if (i == packetclient.GetPlayerNumber())
+            {
+                light.cameraRotation = 270.0f;
+                light.camera_x = 2.0f;
+                light.camera_y = 0;
+                light.light_y = 8.0f;
+            }
+            break;
+        case 2:
+            gameCharacters[i].y = gamePacket[i].getY() - gameCharacters[i].y_scale;
+            gameCharacters[i].x = gamePacket[i].getX();
+            if (i == packetclient.GetPlayerNumber())
+            {
+                light.cameraRotation = 180.0f;
+                light.camera_x = 0.0f;
+                light.camera_y = -2.0f;
+                light.light_y = -4.0f;
+            }
+            break;
+        case 3:
+            gameCharacters[i].x = gamePacket[i].getX() + gameCharacters[i].x_scale;
+            gameCharacters[i].y = gamePacket[i].getY();
+            if (i == packetclient.GetPlayerNumber())
+            {
+                light.cameraRotation = 90.0f;
+                light.camera_x = -2.0f;
+                light.camera_y = 0.0f;
+                light.light_y = 8.0f;
+            }
+            break;
+        default:
+            break;
+        }
+        
     }
-    else if (light.cameraRotation == 270)
-    {
-        main_character.x = 2.0f - main_character.x_scale - 0.1f * main_character.jump_scale;
-        light.light_y = 8.0f;
 
-    }
-    else if (light.cameraRotation == 180)
-    {
-        main_character.y = 4.0f - main_character.y_scale - 0.1f * main_character.jump_scale;
-        light.light_y = -4.0f;
-    }
-    else if (light.cameraRotation == 90)
-    {
-        main_character.x = -2.0f + main_character.x_scale + 0.1f * main_character.jump_scale;
-        light.light_y = 8.0f;
+    if (totalElapsedTime.count() >= 16'667) {
+        totalElapsedTime = std::chrono::microseconds(0);  // totalElapsedTime를 0초로 갱신
     }
 
     InitBuffer();
     glutPostRedisplay();
 
     if (game_check) {
-        glutTimerFunc(30, update, 1);
+        glutTimerFunc(10, update, 1);    
     }
 }
 
-GLvoid keyboard(unsigned char key, int x, int y)
-{
-    handleEvent(key, true);
-    glutPostRedisplay();
+void updateKeyState(char key, bool isPressed) {
+    // 해당 키가 유효한지 확인
+    if (keyStates.find(key) == keyStates.end()) return;
+
+    // 현재 키 상태와 동일하면 무시
+    if (keyStates[key] == isPressed) return;
+
+    // 키 상태 업데이트
+    keyStates[key] = isPressed;
+
+    // Packet의 상태 갱신
+    packetclient.setKeyState(key, isPressed);
+
+    // W, A, D, C의 비트 상태 출력
+    std::cout << "W: " << packetclient.getKeyState('w') << ", ";
+    std::cout << "A: " << packetclient.getKeyState('a') << ", ";
+    std::cout << "D: " << packetclient.getKeyState('d') << ", ";
+    std::cout << "C: " << packetclient.getKeyState('c') << "\n";
+
+    std::cout << "플레이어 번호 : " << packetclient.GetPlayerNumber() << "Valid Bit : " << packetclient.GetValidBit() << std::endl;
+
+    send(sock, reinterpret_cast<char*>(&packetclient), sizeof(packetclient), 0);
+
 }
-GLvoid keyUp(unsigned char key, int x, int y)
-{
-    handleEvent(key, false);
-    glutPostRedisplay();
+
+// 키 입력 이벤트 처리
+void keyboard(unsigned char key, int x, int y) {
+    updateKeyState(key, true); // 키 눌림 처리
 }
 
-GLvoid handleEvent(unsigned char key, bool state)
-{
-    if (state)
-    {
-        switch (key) {
-        case 'z':
-            jump();
-            break;
-       
-        case '2':
-            if (sever_level != 2) {
-                sever_level = 2;
-                glutTimerFunc(90, object_ok, 1);
-            }
-            break;
-        case '3':
-            if (sever_level != 3) {
-                sever_level = 3;
-                objects.clear();
-                glutTimerFunc(90, object_ok, 1);
-            }
-           
-            break;
-        case 'r':
-            game_check = true;
-            sever_level = 0;
-            objects.clear();
-
-            break;
-
-        }
-    }
+void keyUp(unsigned char key, int x, int y) {
+    updateKeyState(key, false); // 키 떼짐 처리
 }
 
 GLvoid MousePoint(int button, int state, int x, int y) {
-    if (button == GLUT_LEFT_BUTTON) {
-        if (state == GLUT_UP) {
-           left_button = false;
-            glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
-
-        }
-        else {
-           left_button = true;
-            glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
-        }
-    }
 }
 
 GLvoid Motion(int x, int y) {
-    {
-        if (left_button) {
-            glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
-            GLfloat mouseX2 = static_cast<GLfloat>(x) - (glutGet(GLUT_WINDOW_WIDTH) / 2.0f);
-
-            // 윈도우 중심(400)에서 마우스 위치의 거리 계산
-            GLfloat distanceFromCenter = mouseX2; // 윈도우 중심을 기준으로 거리 계산
-            GLfloat rotationChange = distanceFromCenter * 0.005f; // 필요에 따라 감도 조절
-
-            
-            if (light.cameraRotation == 0)
-            {
-                main_character.y =  0.1f * main_character.jump_scale;
-                main_character.x += rotationChange;
-                light.light_y = 8.0f;
-            }
-            else if (light.cameraRotation == 270)
-            {
-                main_character.x = 2.0f - main_character.x_scale - 0.1f * main_character.jump_scale;
-                main_character.y += rotationChange;
-                light.light_y = 8.0f;
-
-            }
-            else if (light.cameraRotation == 180)
-            {
-                main_character.y = 4.0f - main_character.y_scale - 0.1f * main_character.jump_scale;
-                main_character.x -= rotationChange;
-                light.light_y = -4.0f;
-            }
-            else if (light.cameraRotation == 90)
-            {
-                main_character.x = -2.0f + main_character.x_scale + 0.1f * main_character.jump_scale;
-                main_character.y -= rotationChange;
-                light.light_y = 8.0f;
-            }
-
-
-            if(sever_level > 3)
-            {
-                if (main_character.x + main_character.x_scale > 2.0f || main_character.x - main_character.x_scale < -2.0f)
-                {
-                    main_character.x -= rotationChange;
-                }
-            }
-            // 마우스를 윈도우 중앙으로 이동
-            glutWarpPointer(glutGet(GLUT_WINDOW_WIDTH) / 2, glutGet(GLUT_WINDOW_HEIGHT) / 2);
-        }
-        if(sever_level < 4){
-            if (main_character.x + main_character.x_scale > 2.0f)
-            {
-                light.cameraRotation = 270.0f;
-                light.camera_x = 2.0f;
-                light.camera_y = 0;
-                jump_check = 3;
-                main_character.jump_scale = 0;
-            }
-            else if (main_character.x - main_character.x_scale < -2.0f)
-            {
-                light.cameraRotation = 90.0f;
-                light.camera_x = -2.0f;
-                light.camera_y = 0.0f;
-                jump_check = 3;
-                main_character.jump_scale = 0;
-            }
-            else if (main_character.y - main_character.y_scale < 0.0f)
-            {
-                light.cameraRotation = 0.0f;
-                light.camera_x = 0.0f;
-                light.camera_y = 2.0f;
-                jump_check = 3;
-                main_character.jump_scale = 0;
-            }
-            else if (main_character.y + main_character.y_scale > 4.0f)
-            {
-                light.cameraRotation = 180.0f;
-                light.camera_x = 0.0f;
-                light.camera_y = -2.0f;
-                main_character.jump_scale = 0;
-                jump_check = 3;
-            }
-        }
-        
-        InitBuffer();
-        glutPostRedisplay();
-    }
+    
 }
 
-GLvoid jump() {
-    if (light.cameraRotation == 0)
-    {
-        if (jump_check == 3) {
-            jump_check = 0;
-            main_character.jump_scale = 0;
-            glutTimerFunc(60, jump_ok, 1);
-        }
-    }
-    else if (light.cameraRotation == 270)
-    {
-        if (jump_check == 3) {
-            jump_check = 0;
-            main_character.jump_scale = 0;
-            glutTimerFunc(60, jump_ok, 1);
-        }
-    }
-    else if (light.cameraRotation == 180)
-    {
-        if (jump_check == 3) {
-            jump_check = 0;
-            main_character.jump_scale = 0;
-            glutTimerFunc(60, jump_ok, 1);
-        }
-    }
-    else if (light.cameraRotation == 90)
-    {
 
-        if (jump_check == 3) {
-            jump_check = 0;
-            main_character.jump_scale = 0;
-            glutTimerFunc(60, jump_ok, 1);
-        }
-    }
-}
-
-bool checkCollision(object_won& sphere, obss& wall) {
+bool checkCollision(object& sphere, obss& wall) {
     // AABB - 원 충돌
     float closestX = std::max(wall.x - wall.x_scale, std::min(sphere.x, wall.x + wall.x_scale));
     float closestY = std::max(wall.y - wall.y_scale, std::min(sphere.y, wall.y + wall.y_scale));
@@ -940,33 +925,10 @@ bool checkCollision(object_won& sphere, obss& wall) {
 }
 
 
-GLvoid jump_ok(int value) {
-
-    if (jump_check != 3) {
-    if (main_character.jump_scale < 15 && jump_check == 0) {
-        main_character.jump_scale += 1;
-        if (main_character.jump_scale == 15)
-        {
-            jump_check = 1;
-        }
-    }
-    else if (main_character.jump_scale > 0 && jump_check == 1) {
-        main_character.jump_scale -= 1;
-        if (main_character.jump_scale == 0)
-        {
-            jump_check = 3;
-        }
-    }
-    InitBuffer();
-    glutPostRedisplay();
-    glutTimerFunc(30, jump_ok, 1);
-    }
-}
-
 GLvoid object_ok(int value) {
 
     if (objects.size() < 10) {
-        object_won new_object;
+        object new_object;
         if (sever_level > 1) {
             int model = random_model(engine2);
             if (model == 1) {
@@ -978,9 +940,9 @@ GLvoid object_ok(int value) {
                 new_object.init(cubePosVbo2, cubeNomalVbo2); // 객체 초기화
                 new_object.object_num = CubeObject;
             }
-            else if( model == 3)
+            else if (model == 3)
             {
-                new_object.init(hpPosVbo, hpNomalVbo); // 객체 초기화
+                new_object.init(spherePosVbo, sphereNomalVbo); // 객체 초기화
                 new_object.object_num = sphereObject;
             }
             else
@@ -1000,12 +962,13 @@ GLvoid object_ok(int value) {
         {
             new_object.a = 1.0f;
         }
+
         objects.push_back(new_object);
 
         InitBuffer();
         glutPostRedisplay();
 
-        if (sever_level >0) {
+        if (sever_level > 0) {
             glutTimerFunc(480, object_ok, 1);
         }
     }
@@ -1014,7 +977,6 @@ GLvoid object_ok(int value) {
 
 GLvoid next_stage(int value) {
     if (game_check) {
-
 
         std::cout << sever_level << std::endl;
         if (sever_level < 5) {
@@ -1026,7 +988,6 @@ GLvoid next_stage(int value) {
             wall.g = 0.1f;
             wall.b = 0.1f;
             objects.clear();
-            glutTimerFunc(900, object_ok, 1);
         }
         else if (sever_level == 2) {
 
@@ -1034,7 +995,6 @@ GLvoid next_stage(int value) {
             wall.g = 0.5f;
             wall.b = 0.1f;
             objects.clear();
-            glutTimerFunc(900, object_ok, 1);
         }
         else if (sever_level == 3) {
 
@@ -1042,7 +1002,6 @@ GLvoid next_stage(int value) {
             wall.g = 0.1f;
             wall.b = 1.0f;
             objects.clear();
-            glutTimerFunc(900, object_ok, 1);
         }
         else if (sever_level == 4) {
 
@@ -1054,17 +1013,44 @@ GLvoid next_stage(int value) {
             light.camera_x = 0.0f;
             light.camera_y = 2.0f;
             jump_check = 3;
-            main_character.jump_scale = 0;
-            main_character.x = 0;
-            main_character.y = 0.25f;
-            main_character.z = -1.0f;
+
+            gameCharacters[1].jump_scale = 0;
+            gameCharacters[1].x = 0;
+            gameCharacters[1].y = 0.25f;
+            gameCharacters[1].z = -1.0f;
             objects.clear();
-            glutTimerFunc(900, object_ok, 1);
         }
 
+        glutTimerFunc(900, object_ok, 1);
         glutTimerFunc(30000, next_stage, 1);
         InitBuffer();
         glutPostRedisplay();
     }
 }
 
+
+GLvoid object_test() {
+
+    for (int i = 0; i < 10; ++i)
+    {
+        object new_object;
+        
+        int model = random_model(engine2);
+        if (model == 1) {
+            new_object.init(RockPosVbo, RockNomalVbo); 
+            new_object.object_num = RockObject;
+        }
+        else if (model == 2)
+        {
+            new_object.init(teapotPosVbo, teapotNomalVbo);
+            new_object.object_num = teapotObject;
+        }
+        else 
+        {
+            new_object.init(spherePosVbo, sphereNomalVbo); 
+            new_object.object_num = sphereObject;
+        }
+
+        objects.push_back(new_object);
+    }
+}
