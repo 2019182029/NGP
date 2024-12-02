@@ -68,31 +68,31 @@ DWORD WINAPI RecvThread(LPVOID arg) {
         Packet receivedPacket;
         int retval = recv(s, (char*)&receivedPacket, sizeof(receivedPacket), 0);
 
-        if (retval <= 0) {
+
+        if (retval == 0) {
+            std::cout << "recv() 정상 종료" << std::endl;
+
+            int playerNumber = receivedPacket.GetPlayerNumber();
+            if (playerNumber >= 0 && playerNumber < 4) {
+                if (!receivedPacket.GetValidBit()) { // 종료 신호 감지
+                    std::cout << "플레이어 " << playerNumber << " 연결 종료." << std::endl;
+
+                    // 클라이언트 슬롯 무효화
+                    WaitForSingleObject(*CIA_ReadEvent, INFINITE);
+                    CIA->at(playerNumber).SetValidBit(false);
+                    SetEvent(*CIA_WriteEvent);
+
+                    // 스레드 종료
+                    break;
+                }
+            }
+        }
+        else if (retval < 0) {
             std::cout << WSAGetLastError() << std::endl;
             err_display("recv()");
             break;
         }
-
-        // 2024.12.02 추가 본 
-        /*
-        int playerNumber = receivedPacket.GetPlayerNumber();
-
-        if (playerNumber >= 0 && playerNumber < 4) {
-            if (!receivedPacket.GetValidBit()) { // 종료 신호 감지
-                std::cout << "플레이어 " << playerNumber << " 연결 종료." << std::endl;
-
-                // 클라이언트 슬롯 무효화
-                WaitForSingleObject(*CIA_ReadEvent, INFINITE);
-                CIA->at(playerNumber).SetValidBit(false);
-                SetEvent(*CIA_WriteEvent);
-
-                // 스레드 종료
-                break;
-            }
-        }
-        */
-        
+                
         if (!*isGameStarted) {
             WaitForSingleObject(*CIA_ReadEvent, INFINITE);  // 시간 설정 필요
             int playerNumber = receivedPacket.GetPlayerNumber();
