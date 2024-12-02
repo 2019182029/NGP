@@ -53,13 +53,16 @@ public:
 class Position {
 private:
 	float x, y, z;
+	bool item;
 
 public:
 	void SetPosition(float fx, float fy, float fz) { x = fx; y = fy; z = fz; }
+	void SetItem(bool bitem) { item = bitem; }
 
 	float GetXPosition() { return x; }
 	float GetYPosition() { return y; }
 	float GetZPosition() { return z; }
+	bool GetItem() { return item; }
 };
 
 class ThreadArg {

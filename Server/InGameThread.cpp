@@ -1,11 +1,12 @@
 #include "Common.h"
 #include "InGameThread.h"
 
-std::default_random_engine dre(0);
+std::default_random_engine dre(std::random_device{}());
 std::uniform_int_distribution<int> uid(-15, 15);
 std::uniform_int_distribution<int> uidZDir(10, 15);
+std::uniform_int_distribution<int> uidItem(0, 100);
 
-void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerClientArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, CRITICAL_SECTION* ServerClientArray_CS, volatile bool* isGameStart) {
+void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerClientArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, std::array<Position, 10>* ObstacleArray, CRITICAL_SECTION* ServerClientArray_CS, volatile bool* isGameStart) {
 	EnterCriticalSection(ServerClientArray_CS);
 	
 	for (int i = 0; i < 4; ++i) {
@@ -49,13 +50,18 @@ void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerC
 	LeaveCriticalSection(ServerClientArray_CS);
 
 	// 장애물 초기화
-	for (auto& obstacle : *Obstacles) {
+	for (int i = 0; i < 10; ++i) {
 		// 위치 
-		obstacle.SetPosition(uid(dre) / 10.0f, uid(dre) / 10.0f);
-		obstacle.SetZPosition(-100.0f);
+		(*Obstacles)[i].SetPosition(uid(dre) / 10.0f, uid(dre) / 10.0f);
+		(*Obstacles)[i].SetZPosition(-100.0f);
 
 		// 방향
-		obstacle.SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, (float)uidZDir(dre));
+		(*Obstacles)[i].SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, (float)uidZDir(dre));
+
+		// 아이템인가?
+		if (uidItem(dre) / 100.0f < 0.25f) {
+			(*ObstacleArray)[i].SetItem(true);
+		}
 	}
 
 	*isGameStart = true;
@@ -341,7 +347,7 @@ void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime) {
 	}
 }
 
-void CheckPlayerObjectCollision(std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles) {
+void CheckPlayerObjectCollision(std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, std::array<Position, 10>* ObstacleArray) {
 	for (auto& player : *ClientInfo) {
 		if (!player.GetValidBit()) { continue; }
 		if (!player.GetSurvivingBit()) { continue; }
@@ -379,7 +385,7 @@ void CheckPlayerObjectCollision(std::array<Object, 4>* ClientInfo, std::array<Ob
 			if (sqrt((playerX - (*Obstacles)[i].GetXPosition()) * (playerX - (*Obstacles)[i].GetXPosition()) +
 				     (playerY - (*Obstacles)[i].GetYPosition()) * (playerY - (*Obstacles)[i].GetYPosition()) +
 				     (-1.0f - (*Obstacles)[i].GetZPosition()) * (-1.0f - (*Obstacles)[i].GetZPosition())) < 0.5f) {  // 플레이어와 장애물 간의 거리가 0.5f 미만이라면
-				if (i == 0) {  // 장애물이 아이템이라면
+				if ((*ObstacleArray)[i].GetItem()) {  // 장애물이 아이템이라면
 					player.SetItemBit(1);
 				}
 				else {
@@ -421,7 +427,7 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 	double elapsedTime;
 	auto totalElapsedTime = std::chrono::microseconds(0);
 
-	Init(((ThreadArg*)arg)->GetClientInfoArray(), ((ThreadArg*)arg)->GetServerClientArray(), &Players, &Obstacles, ((ThreadArg*)arg)->GetServerClientArrayCS(), ((ThreadArg*)arg)->GetGameStartOrNot());
+	Init(((ThreadArg*)arg)->GetClientInfoArray(), ((ThreadArg*)arg)->GetServerClientArray(), &Players, &Obstacles, ((ThreadArg*)arg)->GetObstacleArray(), ((ThreadArg*)arg)->GetServerClientArrayCS(), ((ThreadArg*)arg)->GetGameStartOrNot());
 
 	// 게임 루프
 	while (1) {
@@ -441,10 +447,10 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 		// 클리아인트, 장애물 이동 
 		MovePlayer(&Players, elapsedTime);
-		//MoveObstacle(&Obstacles, elapsedTime);
+		MoveObstacle(&Obstacles, elapsedTime);
 
 		// 충돌 검사
-		CheckPlayerObjectCollision(&Players, &Obstacles);
+		CheckPlayerObjectCollision(&Players, &Obstacles, ((ThreadArg*)arg)->GetObstacleArray());
 
 		// totalElapsedTime이 60분의 1초를 경과했을 시 ServerClientArray 갱신
 		if (totalElapsedTime.count() >= 16'667) {
