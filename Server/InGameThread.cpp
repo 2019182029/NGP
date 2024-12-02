@@ -4,7 +4,7 @@
 std::default_random_engine dre(std::random_device{}());
 std::uniform_int_distribution<int> uid(-15, 15);
 std::uniform_int_distribution<int> uidZDir(10, 15);
-std::uniform_int_distribution<int> uidItem(0, 100);
+std::uniform_int_distribution<int> uidItem(0, 9);
 
 void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerClientArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, std::array<Position, 10>* ObstacleArray, CRITICAL_SECTION* ServerClientArray_CS, volatile bool* isGameStart) {
 	EnterCriticalSection(ServerClientArray_CS);
@@ -52,17 +52,15 @@ void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerC
 	// 장애물 초기화
 	for (int i = 0; i < 10; ++i) {
 		// 위치 
-		(*Obstacles)[i].SetPosition(uid(dre) / 10.0f, uid(dre) / 10.0f);
+		(*Obstacles)[i].SetPosition(0.0f, 2.0f);
 		(*Obstacles)[i].SetZPosition(-100.0f);
 
 		// 방향
-		(*Obstacles)[i].SetDir(uid(dre) / 10.0f, (uid(dre) / 10.0f) + 2.0f, (float)uidZDir(dre));
-
-		// 아이템인가?
-		if (uidItem(dre) / 100.0f < 0.25f) {
-			(*ObstacleArray)[i].SetItem(true);
-		}
+		(*Obstacles)[i].SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, (float)uidZDir(dre));
 	}
+
+	// 아이템
+	(*ObstacleArray)[uidItem(dre)].SetItem(true);
 
 	*isGameStart = true;
 
@@ -239,19 +237,61 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 					if (currentPosition.GetYPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() - 0.25f &&
 						currentPosition.GetYPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f) { 
 
-						nextPosition.SetPosition(currentPosition.GetXPosition(), nextPosition.GetYPosition(), 0.0f);
+						switch (player.GetCurrentSurface()) {
+						case 1:
+							if (currentPosition.GetXPosition() + 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() - 0.25f) {  // 다른 플레이어를 밟았다면 
+								(*ClientInfo)[i].SetSurvivingBit(0);
+								std::cout << "플레이어 " << i << "번 사망" << std::endl;
+							}
+							else {
+								nextPosition.SetPosition(currentPosition.GetXPosition(), nextPosition.GetYPosition(), 0.0f);
+							}
+							break;
+
+						case 3:
+							if (currentPosition.GetXPosition() - 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() + 0.25f) {  // 다른 플레이어를 밟았다면 
+								(*ClientInfo)[i].SetSurvivingBit(0);
+								std::cout << "플레이어 " << i << "번 사망" << std::endl;
+							}
+							else {
+								nextPosition.SetPosition(currentPosition.GetXPosition(), nextPosition.GetYPosition(), 0.0f);
+							}
+							break;
+
+						default:
+							nextPosition.SetPosition(currentPosition.GetXPosition(), nextPosition.GetYPosition(), 0.0f);
+							break;
+						}
 					}
 
 					// y값이 변화하여 충돌이 발생한 거라면
 					if (currentPosition.GetXPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() - 0.25f &&
 						currentPosition.GetXPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() + 0.25f) {
 
-						if (currentPosition.GetYPosition() - 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f) {  // 다른 플레이어를 밟았다면 
-							(*ClientInfo)[i].SetSurvivingBit(0);
-							std::cout << "플레이어 " << i << "번 사망" << std::endl;
-						}
-						else {
+						switch (player.GetCurrentSurface()) {
+						case 0:
+							if (currentPosition.GetYPosition() - 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f) {  // 다른 플레이어를 밟았다면 
+								(*ClientInfo)[i].SetSurvivingBit(0);
+								std::cout << "플레이어 " << i << "번 사망" << std::endl;
+							}
+							else {
+								nextPosition.SetPosition(currentPosition.GetXPosition(), nextPosition.GetYPosition(), 0.0f);
+							}
+							break;
+
+						case 3:
+							if (currentPosition.GetYPosition() + 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() - 0.25f) {  // 다른 플레이어를 밟았다면 
+								(*ClientInfo)[i].SetSurvivingBit(0);
+								std::cout << "플레이어 " << i << "번 사망" << std::endl;
+							}
+							else {
+								nextPosition.SetPosition(currentPosition.GetXPosition(), nextPosition.GetYPosition(), 0.0f);
+							}
+							break;
+
+						default:
 							nextPosition.SetPosition(nextPosition.GetXPosition(), currentPosition.GetYPosition(), 0.0f);
+							break;
 						}
 					}
 			}
@@ -447,7 +487,7 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 		// 클리아인트, 장애물 이동 
 		MovePlayer(&Players, elapsedTime);
-		MoveObstacle(&Obstacles, elapsedTime);
+		//MoveObstacle(&Obstacles, elapsedTime);
 
 		// 충돌 검사
 		CheckPlayerObjectCollision(&Players, &Obstacles, ((ThreadArg*)arg)->GetObstacleArray());
