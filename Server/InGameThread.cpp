@@ -1,7 +1,6 @@
 // Todo
 // 
 // 장애물 초기 위치 및 속도 : Init()
-// 플레이어 점프, 플레이어 간의 충돌 검사 : MovePlayer()
 // 아이템
 
 #include "Common.h"
@@ -84,7 +83,26 @@ void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 	switch (packet.GetKeyState() ^ (*ClientInfo)[packet.GetPlayerNumber()].GetKeyState()) {  // 어떤 키가 눌리거나 떼어졌는가?
 	case 0b1000:  // W 키
 		if (packet.GetKeyState() & 0b1000) {  // W 키가 눌렸다면
-			// Jump Code Here...
+			switch ((*ClientInfo)[packet.GetPlayerNumber()].GetCurrentSurface()) {  // 점프할 수 있다면
+			case 0:
+				if ((*ClientInfo)[packet.GetPlayerNumber()].GetYPosition() == 0.0f) { (*ClientInfo)[packet.GetPlayerNumber()].SetDir(0.0f, 2.0f); }
+				break;
+
+			case 1:
+				if ((*ClientInfo)[packet.GetPlayerNumber()].GetXPosition() == 2.0f) { (*ClientInfo)[packet.GetPlayerNumber()].SetDir(0.0f, 2.0f); }
+				break;
+
+			case 2:
+				if ((*ClientInfo)[packet.GetPlayerNumber()].GetYPosition() == 4.0f) { (*ClientInfo)[packet.GetPlayerNumber()].SetDir(0.0f, 2.0f); }
+				break;
+
+			case 3:
+				if ((*ClientInfo)[packet.GetPlayerNumber()].GetXPosition() == -2.0f) { (*ClientInfo)[packet.GetPlayerNumber()].SetDir(0.0f, 2.0f); }
+				break;
+
+			default:
+				break;
+			}
 		}
 		break;
 
@@ -163,26 +181,40 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 		if (!player.GetValidBit()) { continue; }
 		if (!player.GetSurvivingBit()) { continue; }
 
-		// 플레이어 위치 보정
+		// 플레이어 위치, 속도 보정
 		currentPosition = ModifyPlayerPosition(player);
+		player.SetDir(0.0f, -2.0f * (float)elapsedTime);
 
 		// 플레이어 다음 위치
 		switch (player.GetCurrentSurface()) {
 		case 0:  // 아랫면이 밑면일 때
 			nextPosition.SetPosition(currentPosition.GetXPosition() + player.GetXDir() * (float)elapsedTime, currentPosition.GetYPosition() + player.GetYDir() * (float)elapsedTime, 0.0f);
+			if (nextPosition.GetYPosition() < 0.0f + 0.25f) {
+				nextPosition.SetPosition(nextPosition.GetXPosition(), 0.0f + 0.25f, 0.0f);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
+			}
 			break;
 
 		case 1:  // 오른면이 밑면일 때
 			nextPosition.SetPosition(currentPosition.GetXPosition() - player.GetYDir() * (float)elapsedTime, currentPosition.GetYPosition() + player.GetXDir() * (float)elapsedTime, 0.0f);
-			break;
+			if (nextPosition.GetXPosition() > 2.0f - 0.25f) {
+				nextPosition.SetPosition(2.0f - 0.25f, nextPosition.GetYPosition(), 0.0f);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
+			}break;
 
 		case 2:  // 윗면이 밑면일 때
 			nextPosition.SetPosition(currentPosition.GetXPosition() - player.GetXDir() * (float)elapsedTime, currentPosition.GetYPosition() - player.GetYDir() * (float)elapsedTime, 0.0f);
-			break;
+			if (nextPosition.GetYPosition() > 4.0f - 0.25f) {
+				nextPosition.SetPosition(nextPosition.GetXPosition(), 4.0f - 0.25f, 0.0f);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
+			}break;
 
 		case 3:  // 왼면이 밑면일 때
 			nextPosition.SetPosition(currentPosition.GetXPosition() + player.GetYDir() * (float)elapsedTime, currentPosition.GetYPosition() - player.GetXDir() * (float)elapsedTime, 0.0f);
-			break;
+			if (nextPosition.GetXPosition() < -2.0f + 0.25f) {
+				nextPosition.SetPosition(-2.0f + 0.25f, nextPosition.GetYPosition(), 0.0f);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
+			}break;
 
 		default:
 			break;
@@ -190,17 +222,36 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 
 		// 플레이어 간의 충돌 검사
 		for (int i = 0; i < 4; ++i) {
-			if (player.GetPlayerNumber() == i) { continue; }
+			if (i == player.GetPlayerNumber()) { continue; }
 
 			if (!(*ClientInfo)[i].GetValidBit()) { continue; }
 			if (!(*ClientInfo)[i].GetSurvivingBit()) { continue; }
 
 			// AABB 충돌 검사
 			if ((nextPosition.GetXPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() - 0.25f &&
-				nextPosition.GetXPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() + 0.25f) &&
-				(nextPosition.GetYPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() - 0.25f &&
-				nextPosition.GetYPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f)) {
-				nextPosition.SetPosition(currentPosition.GetXPosition(), currentPosition.GetYPosition(), 0.0f);
+				 nextPosition.GetXPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() + 0.25f) 
+				&& (nextPosition.GetYPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() - 0.25f &&
+				    nextPosition.GetYPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f)) {
+
+					// x값이 변화하여 충돌이 발생한 거라면
+					if (currentPosition.GetYPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() - 0.25f &&
+						currentPosition.GetYPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f) { 
+
+						nextPosition.SetPosition(currentPosition.GetXPosition(), nextPosition.GetYPosition(), 0.0f);
+					}
+
+					// y값이 변화하여 충돌이 발생한 거라면
+					if (currentPosition.GetXPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() - 0.25f &&
+						currentPosition.GetXPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() + 0.25f) {
+
+						if (currentPosition.GetYPosition() - 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f) {  // 다른 플레이어를 밟았다면 
+							(*ClientInfo)[i].SetSurvivingBit(0);
+							std::cout << "플레이어 " << i << "번 사망" << std::endl;
+						}
+						else {
+							nextPosition.SetPosition(nextPosition.GetXPosition(), currentPosition.GetYPosition(), 0.0f);
+						}
+					}
 			}
 		}
 
@@ -209,48 +260,56 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 		case 0:  // 아랫면이 밑면일 때
 			player.SetPosition(nextPosition.GetXPosition(), nextPosition.GetYPosition() - 0.25f);
 			if (player.GetXPosition() < -2.0f + 0.25f) {  // 왼쪽 벽에 닿았다면
-				player.SetPosition(-2.0f, 0.25f);
+				player.SetPosition(-2.0f, nextPosition.GetYPosition());
 				player.SetCurrentSurface(3);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
 			}
 			else if (player.GetXPosition() > 2.0f - 0.25f) {  // 오른쪽 벽에 닿았다면
-				player.SetPosition(2.0f, 0.25f);
+				player.SetPosition(2.0f, nextPosition.GetYPosition());
 				player.SetCurrentSurface(1);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
 			}
 			break;
 
 		case 1:  // 오른면이 밑면일 때
 			player.SetPosition(nextPosition.GetXPosition() + 0.25f, nextPosition.GetYPosition());
 			if (player.GetYPosition() < 0.0f + 0.25f) {  // 아래쪽 벽에 닿았다면
-				player.SetPosition(2.0f - 0.25f, 0.0f);
+				player.SetPosition(nextPosition.GetXPosition(), 0.0f);
 				player.SetCurrentSurface(0);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
 			}
 			else if (player.GetYPosition() > 4.0f - 0.25f) {  // 위쪽 벽에 닿았다면
-				player.SetPosition(2.0f - 0.25f, 4.0f);
+				player.SetPosition(nextPosition.GetXPosition(), 4.0f);
 				player.SetCurrentSurface(2);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
 			}
 			break;
 
 		case 2:  // 윗면이 밑면일 때
 			player.SetPosition(nextPosition.GetXPosition(), nextPosition.GetYPosition() + 0.25f);
 			if (player.GetXPosition() < -2.0f + 0.25f) {  // 왼쪽 벽에 닿았다면
-				player.SetPosition(-2.0f, 4.0f - 0.25f);
+				player.SetPosition(-2.0f, nextPosition.GetYPosition());
 				player.SetCurrentSurface(3);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
 			}
 			else if (player.GetXPosition() > 2.0f - 0.25f) {  // 오른쪽 벽에 닿았다면
-				player.SetPosition(2.0f, 4.0f - 0.25f);
+				player.SetPosition(2.0f, nextPosition.GetYPosition());
 				player.SetCurrentSurface(1);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
 			}
 			break;
 
 		case 3:  // 왼면이 밑면일 때
 			player.SetPosition(nextPosition.GetXPosition() - 0.25f, nextPosition.GetYPosition());
 			if (player.GetYPosition() < 0.0f + 0.25f) {  // 아래쪽 벽에 닿았다면
-				player.SetPosition(-2.0f + 0.25f, 0.0f);
+				player.SetPosition(nextPosition.GetXPosition(), 0.0f);
 				player.SetCurrentSurface(0);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
 			}
 			else if (player.GetYPosition() > 4.0f - 0.25f) {  // 위쪽 벽에 닿았다면
-				player.SetPosition(-2.0f + 0.25f, 4.0f);
+				player.SetPosition(nextPosition.GetXPosition(), 4.0f);
 				player.SetCurrentSurface(2);
+				player.SetDir(0.0f, -1.0f * player.GetYDir());
 			}
 			break;
 
