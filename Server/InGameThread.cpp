@@ -82,6 +82,12 @@ void PopFromClientServerQueue(std::queue<Packet>* ClientServerQueue, std::array<
 
 void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 	switch (packet.GetKeyState() ^ (*ClientInfo)[packet.GetPlayerNumber()].GetKeyState()) {  // 어떤 키가 눌리거나 떼어졌는가?
+	case 0b1000:  // W 키
+		if (packet.GetKeyState() & 0b1000) {  // W 키가 눌렸다면
+			// Jump Code Here...
+		}
+		break;
+
 	case 0b0100:  // A 키
 		if (packet.GetKeyState() & 0b0100) {  // A 키가 눌렸다면
 			(*ClientInfo)[packet.GetPlayerNumber()].SetDir(-1.0f, 0.0f); 
@@ -123,14 +129,87 @@ void Update(Packet packet, std::array<Object, 4>* ClientInfo) {
 	(*ClientInfo)[packet.GetPlayerNumber()].SetKeyState(packet.GetKeyState());  // ClientInfo의 KeyState 갱신
 }
 
+Vertex ModifyPlayerPosition(Object& player) {
+	Vertex PlayerPosition;
+
+	switch (player.GetCurrentSurface()) {
+	case 0:  // 아랫면이 밑면일 때
+		PlayerPosition.SetPosition(player.GetXPosition(), player.GetYPosition() + 0.25f, 0.0f);
+		break;
+
+	case 1:  // 오른면이 밑면일 때
+		PlayerPosition.SetPosition(player.GetXPosition() - 0.25f, player.GetYPosition(), 0.0f);
+		break;
+
+	case 2:  // 윗면이 밑면일 때
+		PlayerPosition.SetPosition(player.GetXPosition(), player.GetYPosition() - 0.25f, 0.0f);
+		break;
+
+	case 3:  // 왼면이 밑면일 때
+		PlayerPosition.SetPosition(player.GetXPosition() + 0.25f, player.GetYPosition(), 0.0f);
+		break;
+
+	default:
+		break;
+	}
+
+	return PlayerPosition;
+}
+
 void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
+	Vertex currentPosition, nextPosition;
+
 	for (auto& player : *ClientInfo) {
 		if (!player.GetValidBit()) { continue; }
 		if (!player.GetSurvivingBit()) { continue; }
 
+		// 플레이어 위치 보정
+		currentPosition = ModifyPlayerPosition(player);
+
+		// 플레이어 다음 위치
 		switch (player.GetCurrentSurface()) {
 		case 0:  // 아랫면이 밑면일 때
-			player.SetPosition(player.GetXPosition() + player.GetXDir() * (float)elapsedTime, player.GetYPosition());
+			nextPosition.SetPosition(currentPosition.GetXPosition() + player.GetXDir() * (float)elapsedTime, currentPosition.GetYPosition() + player.GetYDir() * (float)elapsedTime, 0.0f);
+			break;
+
+		case 1:  // 오른면이 밑면일 때
+			nextPosition.SetPosition(currentPosition.GetXPosition() - player.GetYDir() * (float)elapsedTime, currentPosition.GetYPosition() + player.GetXDir() * (float)elapsedTime, 0.0f);
+			break;
+
+		case 2:  // 윗면이 밑면일 때
+			nextPosition.SetPosition(currentPosition.GetXPosition() - player.GetXDir() * (float)elapsedTime, currentPosition.GetYPosition() - player.GetYDir() * (float)elapsedTime, 0.0f);
+			break;
+
+		case 3:  // 왼면이 밑면일 때
+			nextPosition.SetPosition(currentPosition.GetXPosition() + player.GetYDir() * (float)elapsedTime, currentPosition.GetYPosition() - player.GetXDir() * (float)elapsedTime, 0.0f);
+			break;
+
+		default:
+			break;
+		}
+
+		// 플레이어 간의 충돌 검사
+		for (int i = player.GetPlayerNumber() + 1; i < 4; ++i) {
+			if (!(*ClientInfo)[i].GetValidBit()) { continue; }
+			if (!(*ClientInfo)[i].GetSurvivingBit()) { continue; }
+
+			// x값 충돌 검사
+			if (nextPosition.GetXPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() - 0.25f ||
+				nextPosition.GetXPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetXPosition() + 0.25f) {
+				nextPosition.SetPosition(currentPosition.GetXPosition(), nextPosition.GetYPosition(), 0.0f);
+			}
+
+			// y값 충돌 검사
+			if (nextPosition.GetYPosition() + 0.25f > ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() - 0.25f ||
+				nextPosition.GetYPosition() - 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() + 0.25f) {
+				nextPosition.SetPosition(nextPosition.GetXPosition(), currentPosition.GetYPosition(), 0.0f);
+			}
+		}
+
+		// 플레이어와 벽 간의 충돌 검사
+		switch (player.GetCurrentSurface()) {
+		case 0:  // 아랫면이 밑면일 때
+			player.SetPosition(nextPosition.GetXPosition(), nextPosition.GetYPosition() - 0.25f);
 			if (player.GetXPosition() < -2.0f + 0.25f) {  // 왼쪽 벽에 닿았다면
 				player.SetPosition(-2.0f, 0.25f);
 				player.SetCurrentSurface(3);
@@ -142,7 +221,7 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 			break;
 
 		case 1:  // 오른면이 밑면일 때
-			player.SetPosition(player.GetXPosition(), player.GetYPosition() + player.GetXDir() * (float)elapsedTime);
+			player.SetPosition(nextPosition.GetXPosition() + 0.25f, nextPosition.GetYPosition());
 			if (player.GetYPosition() < 0.0f + 0.25f) {  // 아래쪽 벽에 닿았다면
 				player.SetPosition(2.0f - 0.25f, 0.0f);
 				player.SetCurrentSurface(0);
@@ -154,7 +233,7 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 			break;
 
 		case 2:  // 윗면이 밑면일 때
-			player.SetPosition(player.GetXPosition() - player.GetXDir() * (float)elapsedTime, player.GetYPosition());
+			player.SetPosition(nextPosition.GetXPosition(), nextPosition.GetYPosition() + 0.25f);
 			if (player.GetXPosition() < -2.0f + 0.25f) {  // 왼쪽 벽에 닿았다면
 				player.SetPosition(-2.0f, 4.0f - 0.25f);
 				player.SetCurrentSurface(3);
@@ -166,7 +245,7 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 			break;
 
 		case 3:  // 왼면이 밑면일 때
-			player.SetPosition(player.GetXPosition(), player.GetYPosition() - player.GetXDir() * (float)elapsedTime);
+			player.SetPosition(nextPosition.GetXPosition() - 0.25f, nextPosition.GetYPosition());
 			if (player.GetYPosition() < 0.0f + 0.25f) {  // 아래쪽 벽에 닿았다면
 				player.SetPosition(-2.0f + 0.25f, 0.0f);
 				player.SetCurrentSurface(0);
@@ -203,7 +282,7 @@ void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime) {
 	}
 }
 
-void CheckCollision(std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles) {
+void CheckPlayerObjectCollision(std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles) {
 	for (auto& player : *ClientInfo) {
 		if (!player.GetValidBit()) { continue; }
 		if (!player.GetSurvivingBit()) { continue; }
@@ -301,7 +380,7 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 		MoveObstacle(&Obstacles, elapsedTime);
 
 		// 충돌 검사
-		CheckCollision(&Players, &Obstacles);
+		CheckPlayerObjectCollision(&Players, &Obstacles);
 
 		// totalElapsedTime이 60분의 1초를 경과했을 시 ServerClientArray 갱신
 		if (totalElapsedTime.count() >= 16'667) {

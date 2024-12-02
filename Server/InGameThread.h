@@ -18,9 +18,10 @@ public:
 void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerClientArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, CRITICAL_SECTION* ServerClientArray_CS, volatile bool* isGameStart);
 void PopFromClientServerQueue(std::queue<Packet>* ClientServerQueue, std::array<Object, 4>* ClientInfo, CRITICAL_SECTION* ClientServerQueue_CS);
 void Update(Packet packet, std::array<Object, 4>* ClientInfo);
+Vertex ModifyPlayerPosition(Object& player);
 void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime);
 void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime);
-void CheckCollision(std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles);
+void CheckPlayerObjectCollision(std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles);
 void RenewalServerClientArray(std::array<Packet, 4>* ServerClientArray, std::array<Vertex, 10>* ObstacleArray, std::array<Object, 4>* ClientInfo, std::array<Object, 10>* Obstacles, CRITICAL_SECTION* ServerClientArray_CS);
 
 DWORD WINAPI InGameThread(LPVOID arg);
