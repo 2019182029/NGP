@@ -53,7 +53,7 @@ void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerC
 	for (int i = 0; i < 10; ++i) {
 		// 위치 
 		(*Obstacles)[i].SetPosition(0.0f, 2.0f);
-		(*Obstacles)[i].SetZPosition(-100.0f);
+		(*Obstacles)[i].SetZPosition(-100.0f - 10.0f * i);
 
 		// 방향
 		(*Obstacles)[i].SetDir(uid(dre) / 10.0f, uid(dre) / 10.0f, (float)uidZDir(dre));
@@ -487,7 +487,7 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 		// 클리아인트, 장애물 이동 
 		MovePlayer(&Players, elapsedTime);
-		//MoveObstacle(&Obstacles, elapsedTime);
+		MoveObstacle(&Obstacles, elapsedTime);
 
 		// 충돌 검사
 		CheckPlayerObjectCollision(&Players, &Obstacles, ((ThreadArg*)arg)->GetObstacleArray());
