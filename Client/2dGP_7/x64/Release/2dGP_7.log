@@ -1,10 +1,21 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: 중간 디렉터리(x64\Release\)에 다른 프로젝트(2dGP_7-MyAsusLaptop.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
+  class.cpp
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\class.cpp(87,23): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\class.cpp(88,23): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\class.cpp(89,27): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\class.cpp(91,38): warning C4244: '=': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\class.cpp(119,29): warning C4244: '+=': 'double'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\class.cpp(120,29): warning C4244: '+=': 'double'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\class.cpp(121,29): warning C4244: '+=': 'double'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   main.cpp
-C:\Users\원준\Desktop\NGP\Client\2dGP_7\main.cpp(640,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\원준\Desktop\NGP\Client\2dGP_7\main.cpp(641,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\main.cpp(661,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\main.cpp(662,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  obj.cpp
+C:\Users\원준\Desktop\NGP\Client\2dGP_7\obj.cpp(110,26): warning C4267: 'return': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  packet.cpp
   코드를 생성하고 있습니다.
-  49 of 646 functions ( 7.6%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    8 functions had inline decision re-evaluated but remain unchanged
+  126 of 680 functions (18.5%) were compiled, the rest were copied from previous compilation.
+    43 functions were new in current compilation
+    33 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
   2dGP_7.vcxproj -> C:\Users\원준\Desktop\NGP\Client\x64\Release\2dGP_7.exe

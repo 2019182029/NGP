@@ -381,8 +381,8 @@ void MoveObstacle(std::array<Object, 10>* Obstacles, double elapsedTime) {
 		obstacle.SetPosition(obstacle.GetXPosition() + obstacle.GetXDir() * (float)elapsedTime, obstacle.GetYPosition() + obstacle.GetYDir() * (float)elapsedTime);
 		obstacle.SetZPosition(obstacle.GetZPosition() + obstacle.GetZDir() * (float)elapsedTime);
 
-		if (obstacle.GetZPosition() > 0.0f) {  // 플레이어를 지나갔다면
-			obstacle.SetZPosition(-100.0f + obstacle.GetZPosition());  // 재배치
+		if (obstacle.GetZPosition() > 10.0f) {  // 플레이어를 지나갔다면
+			obstacle.SetZPosition(-100.0f);  // 재배치
 		}
 	}
 }
@@ -424,7 +424,7 @@ void CheckPlayerObjectCollision(std::array<Object, 4>* ClientInfo, std::array<Ob
 			// 플레이어와 장애물 간의 거리 계산을 통한 충돌 검사
 			if (sqrt((playerX - (*Obstacles)[i].GetXPosition()) * (playerX - (*Obstacles)[i].GetXPosition()) +
 				     (playerY - (*Obstacles)[i].GetYPosition()) * (playerY - (*Obstacles)[i].GetYPosition()) +
-				     (-1.0f - (*Obstacles)[i].GetZPosition()) * (-1.0f - (*Obstacles)[i].GetZPosition())) < 0.5f) {  // 플레이어와 장애물 간의 거리가 0.5f 미만이라면
+				     (-1.0f - (*Obstacles)[i].GetZPosition()) * (-1.0f - (*Obstacles)[i].GetZPosition())) < ((sqrt(2) + 1.0f) / 4.0f)) {  // 플레이어와 장애물 간의 거리가 (sqrt(2) + 1.0f) / 4.0f 미만(최단 거리와 최장 거리의 중간값)이라면
 				if ((*ObstacleArray)[i].GetItem()) {  // 장애물이 아이템이라면
 					player.SetItemBit(1);
 				}
