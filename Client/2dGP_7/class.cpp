@@ -12,6 +12,9 @@ std::uniform_real_distribution<GLfloat> random_color(0.0f, 1.0f);
 std::uniform_real_distribution<double> random_rotate(-10.0f, 10.0f);
 
 
+std::default_random_engine dreObstacle{ std::random_device{}() };
+std::uniform_int_distribution<int> uidObstacle(0, 2);
+
 obs::obs()
     : x(0), y(0), z(-45.0f),
     x_scale(2.0f), y_scale(0.0001f), z_scale(50.0f),
@@ -34,9 +37,37 @@ void obss::change_color(float r, float g, float b) {
     this->b = b;
 }
 
-void obss::init(int PosVbo, int NomalVbo) {
+void obss::init(int PosVbo, int NomalVbo, int num) {
     this->vvbo = PosVbo;
     this->nvbo = NomalVbo;
+    this->Object = num;
+
+
+    m_bIsBlowingUp = false;
+    m_fElapsedTime = 0.0f;
+
+    m_pExplosionMesh = new object();
+    m_pExplosionMesh->init(PosVbo, NomalVbo);
+    m_pExplosionMesh->object_num = num;
+    m_pExplosionMesh->x_scale = 0.025f;
+    m_pExplosionMesh->y_scale = 0.025f;
+    m_pExplosionMesh->z_scale = 0.025f;
+
+    for (int i = 0; i < 64; ++i) {
+        // 랜덤 이동을 위한 theta와 phi 값을 move와 유사한 방식으로 계산
+        float theta = glm::linearRand(0.0f, glm::two_pi<float>());
+        float phi = glm::linearRand(0.0f, glm::pi<float>());
+
+        float x = std::cos(theta) * std::sin(phi);
+        float y = std::sin(theta) * std::sin(phi);
+        float z = std::cos(phi);
+
+        float magnitude = glm::linearRand(2.5f, 5.0f);
+
+        // 방사형 벡터의 방향을 move 함수의 결과로 설정
+        m_pvf3Vectors[i] = glm::vec3(x, y, z) * magnitude;
+    }
+
 }
 //---------------------------------------------------------------------------------------------------
 
