@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
 	SOCKET client_sock;
 	struct sockaddr_in clientaddr;
 	int addrlen;
+	u_long mode = 1;
 
 	// 동기화 객체 생성
 	ClientInfoArray_WriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -39,6 +40,7 @@ int main(int argc, char* argv[]) {
 	// 대기 소켓 생성
 	SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (listen_sock == INVALID_SOCKET) err_quit("socket()");
+	ioctlsocket(listen_sock, FIONBIO, &mode);  // 논블로킹 소켓으로 전환
 
 	// bind()
 	struct sockaddr_in serveraddr;
@@ -67,17 +69,26 @@ int main(int argc, char* argv[]) {
 	InfoCheckThreadArg.SetGameStartOrNot(&isGameStart);
 
 	// 정보 확인 스레드 생성
-	HANDLE hThread;
-	hThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&InfoCheckThreadArg, 0, NULL);
-	if (hThread != NULL) CloseHandle(hThread);
+	HANDLE hInfoCheckThread;
+	hInfoCheckThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&InfoCheckThreadArg, 0, NULL);
 
 	while (1) {
 		// accept()
 		addrlen = sizeof(clientaddr);
 		client_sock = accept(listen_sock, (struct sockaddr*)&clientaddr, &addrlen);
 		if (client_sock == INVALID_SOCKET) {
-			err_display("accept()");
-			break;
+			if (WSAGetLastError() == WSAEWOULDBLOCK) {
+				if (WaitForSingleObject(hInfoCheckThread, 10) == WAIT_OBJECT_0) {  // 게임이 종료됐다면
+					break;
+				}
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				continue;
+			}
+			else {
+				err_display("accept()");
+				break;
+			}
 		}
 
 		// 접속한 클라이언트 정보 출력
@@ -99,12 +110,16 @@ int main(int argc, char* argv[]) {
 		ClientServerThreadArg->SetGameStartOrNot(&isGameStart);
 
 		// 클라이언트 전용 스레드 생성
-		hThread = CreateThread(NULL, 0, ClientServerThread, (LPVOID)ClientServerThreadArg, 0, NULL);
-		if (hThread == NULL) { 
+		mode = 0;
+		ioctlsocket(client_sock, FIONBIO, &mode);
+
+		HANDLE hClientServerThread;
+		hClientServerThread = CreateThread(NULL, 0, ClientServerThread, (LPVOID)ClientServerThreadArg, 0, NULL);
+		if (hClientServerThread == NULL) { 
 			delete ClientServerThreadArg;
 			closesocket(client_sock); 
 		}
-		else { CloseHandle(hThread); }
+		else { CloseHandle(hClientServerThread); }
 	}
 
 	// 소켓 닫기

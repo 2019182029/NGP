@@ -88,8 +88,8 @@ DWORD WINAPI RecvThread(LPVOID arg) {
             }
         }
         else if (retval < 0) {
-            std::cout << WSAGetLastError() << std::endl;
-            err_display("recv()");
+            //std::cout << WSAGetLastError() << std::endl;
+            //err_display("recv()");
             break;
         }
                 

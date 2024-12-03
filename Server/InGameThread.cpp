@@ -64,7 +64,7 @@ void Init(std::array<Packet, 4>* ClientInfoArray, std::array<Packet, 4>* ServerC
 
 	*isGameStart = true;
 
-	std::cout << "게임 시작" << std::endl;
+	std::cout << "게임 시작" << std::endl << std::endl;
 }
 
 void PopFromClientServerQueue(std::queue<Packet>* ClientServerQueue, std::array<Object, 4>* ClientInfo, CRITICAL_SECTION* ClientServerQueue_CS) {
@@ -430,6 +430,8 @@ void CheckPlayerObjectCollision(std::array<Object, 4>* ClientInfo, std::array<Ob
 				}
 				else {
 					player.SetSurvivingBit(0);
+
+					std::cout << "플레이어 " << player.GetPlayerNumber() << "번 사망" << std::endl;
 				}
 			}
 		}
@@ -473,9 +475,9 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 	while (1) {
 		// ClientServerQueue가 비어있지 않다면 ClientInfo 갱신
 		PopFromClientServerQueue(((ThreadArg*)arg)->GetClientServerQueue(), &Players, ((ThreadArg*)arg)->GetClientServerQueueCS());
-
+		
 		// 모든 플레이어가 사망했다면 프로그램 종료
-		if (!std::count_if(Players.begin(), Players.end(), [](auto& packet) { return packet.GetSurvivingBit() == 0; })) {
+		if (!std::count_if(Players.begin(), Players.end(), [](auto& packet) { return packet.GetSurvivingBit() == 1; })) {
 			((ThreadArg*)arg)->SetGameStartOrNot(false);
 			break;
 		}
@@ -501,6 +503,8 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1)); // CPU 사용량 감소
 	}
+
+	std::cout << std::endl << "전원 사망, 게임 종료" << std::endl;
 
 	return 0;
 }

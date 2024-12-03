@@ -37,9 +37,10 @@ DWORD __stdcall InfoCheckThread(LPVOID arg) {
         SetEvent(*(((ThreadArg*)arg)->GetClientInfoArrayReadEvent()));
     }
 
-    HANDLE hThread;
-    hThread = CreateThread(NULL, 0, InGameThread, arg, 0, NULL);
-    if (hThread != NULL) { CloseHandle(hThread); }
+    HANDLE hInGameThread;
+    hInGameThread = CreateThread(NULL, 0, InGameThread, arg, 0, NULL);
+
+    WaitForSingleObject(hInGameThread, INFINITE);
 
     return 0;
 }
