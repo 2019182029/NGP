@@ -468,6 +468,7 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	double elapsedTime;
 	auto totalElapsedTime = std::chrono::microseconds(0);
+	auto endTime = std::chrono::high_resolution_clock::now();
 
 	Init(((ThreadArg*)arg)->GetClientInfoArray(), ((ThreadArg*)arg)->GetServerClientArray(), &Players, &Obstacles, ((ThreadArg*)arg)->GetObstacleArray(), ((ThreadArg*)arg)->GetServerClientArrayCS(), ((ThreadArg*)arg)->GetGameStartOrNot());
 
@@ -478,7 +479,8 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 		
 		// 모든 플레이어가 사망했다면 프로그램 종료
 		if (!std::count_if(Players.begin(), Players.end(), [](auto& packet) { return packet.GetSurvivingBit() == 1; })) {
-			((ThreadArg*)arg)->SetGameStartOrNot(false);
+			RenewalServerClientArray(((ThreadArg*)arg)->GetServerClientArray(), ((ThreadArg*)arg)->GetObstacleArray(), &Players, &Obstacles, ((ThreadArg*)arg)->GetServerClientArrayCS());
+			endTime = std::chrono::high_resolution_clock::now();
 			break;
 		}
 
@@ -505,6 +507,15 @@ DWORD __stdcall InGameThread(LPVOID arg) {
 	}
 
 	std::cout << std::endl << "전원 사망, 게임 종료" << std::endl;
+
+	while (1) {
+		if (((std::chrono::duration<double>)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - endTime)).count() > 5.0) {
+			((ThreadArg*)arg)->SetGameStartOrNot(false);
+			break;
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
 
 	return 0;
 }

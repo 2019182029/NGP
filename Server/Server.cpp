@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
 	// 정보 확인 스레드 생성
 	HANDLE hInfoCheckThread;
 	hInfoCheckThread = CreateThread(NULL, 0, InfoCheckThread, (LPVOID)&InfoCheckThreadArg, 0, NULL);
-
+	
 	while (1) {
 		// accept()
 		addrlen = sizeof(clientaddr);
