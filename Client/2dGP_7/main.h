@@ -17,11 +17,12 @@
 #include <gl/glm/glm.hpp>
 #include <gl/glm/gtc/matrix_transform.hpp>
 #include <gl/glm/gtc/type_ptr.hpp>
+#include <gl/glm/gtc/random.hpp>
+
 #include <math.h>
 #include <vector>
 #include <string>
 #include <array>
-
 #include <chrono>
 void make_shaderProgram();
 void make_vertexShaders();

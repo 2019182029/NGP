@@ -18,25 +18,6 @@ public:
     obs(); // 持失切 識情
 };
 
-class obss {
-public:
-    GLfloat x{}, y{ 0.25f }, z{ -1.0f };
-    GLfloat x_scale{ 0.25f }, y_scale{ 0.25f }, z_scale{ 0.25f };
-
-    GLfloat r{ 1 }, g{ 0 }, b{ 0 }, a{ 1.0 };
-    int jump_scale{};
-    int hp;
-
-    GLuint vvbo;
-    GLuint nvbo;
-    GLint Object;
-
-    obss(GLuint cubePosVbo2,GLuint cubeNomalVbo2); // 持失切 識情
-
-    void change_color(float r, float g, float b);
-    void init(int PosVbo, int NomalVbo);
-};
-
 class object {
 public:
     GLfloat x{}, y{ 0.25f }, z{ -100.0f };
@@ -53,6 +34,32 @@ public:
     void init(int PosVbo, int NomalVbo);
     void move(double elapsedTime);
 };
+
+class obss {
+public:
+    GLfloat x{}, y{ 0.25f }, z{ -1.0f };
+    GLfloat x_scale{ 0.25f }, y_scale{ 0.25f }, z_scale{ 0.25f };
+
+    GLfloat r{ 1 }, g{ 0 }, b{ 0 }, a{ 1.0 };
+    int jump_scale{};
+    int hp;
+
+    GLuint vvbo;
+    GLuint nvbo;
+    GLint Object;
+
+    obss(GLuint cubePosVbo2,GLuint cubeNomalVbo2); // 持失切 識情
+
+    bool m_bIsBlowingUp;
+    float m_fElapsedTime;
+
+    object* m_pExplosionMesh;
+    glm::vec3 m_pvf3Vectors[64];
+
+    void change_color(float r, float g, float b);
+    void init(int PosVbo, int NomalVbo, int num);
+};
+
 //------------------------------------------------------------------------------------------------
 class light_set {
 public:
