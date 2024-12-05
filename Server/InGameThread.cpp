@@ -279,7 +279,7 @@ void MovePlayer(std::array<Object, 4>* ClientInfo, double elapsedTime) {
 							}
 							break;
 
-						case 3:
+						case 2:
 							if (currentPosition.GetYPosition() + 0.25f < ModifyPlayerPosition((*ClientInfo)[i]).GetYPosition() - 0.25f) {  // 다른 플레이어를 밟았다면 
 								(*ClientInfo)[i].SetSurvivingBit(0);
 								std::cout << "플레이어 " << i << "번 사망" << std::endl;

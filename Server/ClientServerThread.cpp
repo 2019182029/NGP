@@ -1,5 +1,3 @@
-// 플레이어 정보를 한 번에 보냄
-
 #include <iostream>
 #include <queue>
 #include "Common.h"
@@ -13,43 +11,56 @@ void init(SOCKET s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE*
 
     WaitForSingleObject(CIA_ReadEvent, INFINITE);
 
-    for (int i = 0; i < 4; ++i) {
-        if (!CIA->at(i).GetValidBit()) {
+    if (!(*((ThreadArg*)arg)->GetGameStartOrNot())) {
+        for (int i = 0; i < 4; ++i) {
+            if (!CIA->at(i).GetValidBit()) {
 
-            slotFound = true;
+                slotFound = true;
 
-            CIA->at(i).SetValidBit(true);
-            CIA->at(i).SetPlayerNumber(i);
+                CIA->at(i).SetValidBit(true);
+                CIA->at(i).SetPlayerNumber(i);
 
-            Packet response;
-            response.SetValidBit(true);
-            response.SetPlayerNumber(i);
-            //std::cout << response.GetValidBit() << std::endl;
+                Packet response;
+                response.SetValidBit(true);
+                response.SetPlayerNumber(i);
+                //std::cout << response.GetValidBit() << std::endl;
 
-            int retval = send(s, (char*)&response, sizeof(response), 0);
-            if (retval <= 0) {
-                err_display("send()");
-                break;
-            }
+                int retval = send(s, (char*)&response, sizeof(response), 0);
+                if (retval <= 0) {
+                    err_display("send()");
+                    break;
+                }
 
-            HANDLE hRecvThread = CreateThread(NULL, 0, RecvThread, arg, 0, NULL);
-            if (hRecvThread == NULL) {
-                err_display("RecvThread 생성 실패");
-                closesocket(s);
+                HANDLE hRecvThread = CreateThread(NULL, 0, RecvThread, arg, 0, NULL);
+                if (hRecvThread == NULL) {
+                    err_display("RecvThread 생성 실패");
+                    closesocket(s);
+                    return;
+                }
+                CloseHandle(hRecvThread);
                 return;
             }
-            CloseHandle(hRecvThread);
-            return;
+        }
+
+        SetEvent(CIA_WriteEvent);
+
+        if (!slotFound) {
+            std::cout << "자리 꽉 참" << std::endl;
+            Packet response;
+            response.SetValidBit(false);
+            send(s, (char*)&response, sizeof(response), 0);
         }
     }
-
-    SetEvent(CIA_WriteEvent);
-
-    if (!slotFound) {
-        std::cout << "자리 꽉 참" << std::endl;
+    else {
         Packet response;
         response.SetValidBit(false);
-        send(s, (char*)&response, sizeof(response), 0);
+        response.SetStartBit(true);
+        //std::cout << response.GetValidBit() << std::endl;
+
+        int retval = send(s, (char*)&response, sizeof(response), 0);
+        if (retval <= 0) {
+            err_display("send()");
+        }
     }
 }
 
@@ -68,33 +79,26 @@ DWORD WINAPI RecvThread(LPVOID arg) {
         Packet receivedPacket;
         int retval = recv(s, (char*)&receivedPacket, sizeof(receivedPacket), 0);
 
-
-        if (retval == 0) {
+        if (!receivedPacket.GetValidBit()) {
             std::cout << "recv() 정상 종료" << std::endl;
 
             int playerNumber = receivedPacket.GetPlayerNumber();
             if (playerNumber >= 0 && playerNumber < 4) {
-                if (!receivedPacket.GetValidBit()) { // 종료 신호 감지
-                    std::cout << "플레이어 " << playerNumber << " 연결 종료." << std::endl;
+                std::cout << "플레이어 " << playerNumber << " 연결 종료." << std::endl;
 
-                    // 클라이언트 슬롯 무효화
-                    WaitForSingleObject(*CIA_ReadEvent, INFINITE);
-                    CIA->at(playerNumber).SetValidBit(false);
-                    SetEvent(*CIA_WriteEvent);
+                // 클라이언트 슬롯 무효화
+                WaitForSingleObject(*CIA_ReadEvent, INFINITE);
+                CIA->at(playerNumber).SetValidBit(false);
+                CIA->at(playerNumber).SetReadyBit(false);
+                SetEvent(*CIA_WriteEvent);
 
-                    // 스레드 종료
-                    break;
-                }
+                // 스레드 종료
+                break;
             }
         }
-        else if (retval < 0) {
-            //std::cout << WSAGetLastError() << std::endl;
-            //err_display("recv()");
-            break;
-        }
-                
+
         if (!*isGameStarted) {
-            WaitForSingleObject(*CIA_ReadEvent, INFINITE);  // 시간 설정 필요
+            WaitForSingleObject(*CIA_ReadEvent, INFINITE);
             int playerNumber = receivedPacket.GetPlayerNumber();
             if (playerNumber >= 0 && playerNumber < 4) {
                 CIA->at(playerNumber) = receivedPacket;

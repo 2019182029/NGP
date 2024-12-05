@@ -395,7 +395,7 @@ int main(int argc, char** argv)
 
     object_test();
     //glutTimerFunc(1000, next_stage, 1);
-    glutTimerFunc(60, update, 1);
+    glutTimerFunc(16, update, 1);
 
     PlaySound(TEXT(GAME_BGM), NULL, SND_ASYNC | SND_LOOP);
 
@@ -940,7 +940,7 @@ GLvoid update(int value) {
     InitBuffer();
     glutPostRedisplay();
 
-    if (game_check) {
+    if (game_check && !gamefinish) {
         glutTimerFunc(10, update, 1);
     }
 }
