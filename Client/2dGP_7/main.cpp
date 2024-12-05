@@ -658,9 +658,9 @@ void drawScene()
     glLoadIdentity();
 
     // 텍스트의 위치를 화면 우측 상단으로 설정
-    float x = windowWidth - 100; // 화면 너비에서 100px 떨어진 위치
+    float x = windowWidth - 200; // 화면 너비에서 100px 떨어진 위치
     float y = windowHeight - 30; // 화면 높이에서 30px 떨어진 위치
-    renderBitmapString(x, y, GLUT_BITMAP_HELVETICA_18, ("Item: " + std::to_string(gamePacket[packetclient.GetPlayerNumber()].GetItemBit())).c_str());
+    renderBitmapString(x, y, GLUT_BITMAP_HELVETICA_18, ("player: " + std::to_string(packetclient.GetPlayerNumber()) + " , Item: " + std::to_string(gamePacket[packetclient.GetPlayerNumber()].GetItemBit())).c_str());
 
     glPopMatrix();
 
@@ -796,6 +796,7 @@ char* filetobuf(const char* file)
 
 bool alive_check = false;
 bool gamefinish = false;
+int winner = -1;
 
 GLvoid update(int value) {
 
@@ -819,6 +820,7 @@ GLvoid update(int value) {
             if (alive[i] && !gamePacket[i].GetSurvivingBit())
             {
                 alive[i] = false;
+                winner = i;
                 gameCharacters[i].m_bIsBlowingUp = true;
 
             }
@@ -918,6 +920,7 @@ GLvoid update(int value) {
 
     bool allDead = true;
     bool anyBlowingUp = false;
+
     for (int i = 0; i < 4; ++i) {
         if (alive[i]) {
             allDead = false;
@@ -930,6 +933,7 @@ GLvoid update(int value) {
 
     if (allDead && !anyBlowingUp) {
         std::cout << "게임 종료" << std::endl;
+        std::cout << winner << "번째 플레이어" << "승리" << std::endl;
         gamefinish = true; // 게임 종료 상태 설정
     }
 
