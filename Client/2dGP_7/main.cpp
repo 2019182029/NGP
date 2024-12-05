@@ -75,7 +75,7 @@ std::unordered_map<char, bool> keyStates = {
 
 bool alive[4] = { false,false ,false ,false };
 
-std::default_random_engine engine2(std::random_device{}());
+std::default_random_engine engine2(0);
 std::uniform_int_distribution<int> random_model(1, 3);
 
 obs wall;
