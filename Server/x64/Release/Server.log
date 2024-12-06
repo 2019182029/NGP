@@ -1,6 +1,10 @@
-﻿  InGameThread.cpp
-  코드를 생성하고 있습니다.
-  Previous IPDB and IOBJ mismatch, fall back to full compilation.
-  All 318 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  코드를 생성했습니다.
-  Server.vcxproj -> C:\Users\원준\Desktop\NGP\Server\x64\Release\Server.exe
+﻿  ClientServerThread.cpp
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(26,17): error C2059: 구문 오류: '<<'
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(32,21): error C2065: 'retval': 선언되지 않은 식별자입니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(61,9): error C2059: 구문 오류: '<<'
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(67,13): error C2065: 'retval': 선언되지 않은 식별자입니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(88,9): error C2059: 구문 오류: '<<'
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(92,48): error C2143: 구문 오류: ';'이(가) '{' 앞에 없습니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(110,9): error C2059: 구문 오류: '<<'
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(114,34): error C2143: 구문 오류: ';'이(가) '{' 앞에 없습니다.
+C:\Users\원준\Desktop\NGP\Server\ClientServerThread.cpp(122,13): error C2181: if와 짝을 이루지 않는 잘못된 else문입니다.

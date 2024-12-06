@@ -23,7 +23,6 @@ void init(SOCKET s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE*
                 Packet response;
                 response.SetValidBit(true);
                 response.SetPlayerNumber(i);
-                //std::cout << response.GetValidBit() << std::endl;
 
                 int retval = send(s, (char*)&response, sizeof(response), 0);
                 if (retval <= 0) {
@@ -55,7 +54,6 @@ void init(SOCKET s, std::array<Packet, 4>* CIA, std::queue<Packet>* CSQ, HANDLE*
         Packet response;
         response.SetValidBit(false);
         response.SetStartBit(true);
-        //std::cout << response.GetValidBit() << std::endl;
 
         int retval = send(s, (char*)&response, sizeof(response), 0);
         if (retval <= 0) {
@@ -79,6 +77,7 @@ DWORD WINAPI RecvThread(LPVOID arg) {
         Packet receivedPacket;
         int retval = recv(s, (char*)&receivedPacket, sizeof(receivedPacket), 0);
 
+        // 클라이언트에서 서버로의 접속 해제시 작동
         if (!receivedPacket.GetValidBit()) {
             std::cout << "recv() 정상 종료" << std::endl;
 
@@ -97,6 +96,7 @@ DWORD WINAPI RecvThread(LPVOID arg) {
             }
         }
 
+        // 게임 시작 전 받은 패킷을 클라이언트 정보 패킷에 업데이트
         if (!*isGameStarted) {
             WaitForSingleObject(*CIA_ReadEvent, INFINITE);
             int playerNumber = receivedPacket.GetPlayerNumber();
@@ -105,7 +105,7 @@ DWORD WINAPI RecvThread(LPVOID arg) {
             }
             SetEvent(*CIA_WriteEvent);
         }
-        else {
+        else { // 게임 시작 후, 패킷 업데이트
             EnterCriticalSection(CSQ_CS);
             CSQ->push(receivedPacket);
             LeaveCriticalSection(CSQ_CS);
